@@ -1,5 +1,6 @@
 import pygame
 from prm import generate_prm
+from pathfinding import astar
 
 pygame.init()
 screen_dim = (800, 800)
@@ -23,11 +24,16 @@ for v in range(bounds[1][0], bounds[1][1], grid_size):
     pygame.draw.line(screen, (200, 200, 255), (v, bounds[1][0]), (v, bounds[1][1]))
 
 running = True
-nodes = generate_prm(100, 5, grid_size, map_dim, screen_dim)
+nodes = generate_prm(200, 5, grid_size, bounds)
+print(len(nodes))
 for node in nodes:
     for edge in node.edges:
         pygame.draw.line(screen, (0, 0, 0), (node.x, node.y), (edge.x, edge.y))
-    pygame.draw.circle(screen, (255, 0,0), (node.x, node.y), 5)
+    pygame.draw.circle(screen, (255, 0,0), (node.x, node.y), node.f * 2)
+
+path = astar(nodes[0], nodes[1])
+for i in range(0, len(path)-1):
+    pygame.draw.line(screen, (0, 255, 0), (path[i].x, path[i].y), (path[i+1].x, path[i+1].y), width=3)
 
 while running:
     for event in pygame.event.get():

@@ -5,6 +5,10 @@ class Node:
         self.x = x
         self.y = y
         self.edges = []
+        self.g = np.random.randint(1, 5)
+        self.h = 0
+        self.f = self.g + self.h
+        self.parent = 0
 
     def __repr__(self):
         return "(" + str(self.x) + ", " + str(self.y) + ")"
