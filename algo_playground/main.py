@@ -1,6 +1,7 @@
 import pygame
 from prm import generate_prm
 from pathfinding import astar
+from mymap import Map
 
 pygame.init()
 screen_dim = (800, 800)
@@ -10,29 +11,26 @@ pygame.display.set_caption('Algo Playground')
 pygame.display.set_icon(pygame.image.load('assets/logo.png'))
 pygame.display.flip()
 
-grid_size = 25
-map_dim = (600, 600)
-bounds = [(int((screen_dim[0] - map_dim[0])/2), int((screen_dim[0] + map_dim[0])/2)), (int((screen_dim[1] - map_dim[1])/2), int((screen_dim[1] + map_dim[1])/2))]
-
-pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(100, 100, 600, 600))
-
-
-for h in range(bounds[0][0], bounds[0][1], grid_size):
-    pygame.draw.line(screen, (200, 200, 255), (bounds[0][0], h), (bounds[0][1], h))
-
-for v in range(bounds[1][0], bounds[1][1], grid_size):
-    pygame.draw.line(screen, (200, 200, 255), (v, bounds[1][0]), (v, bounds[1][1]))
+grid_size = 50
+mymap = Map((600, 600), grid_size, screen_dim)
+mymap.generate_random_obstacles(5, 4)
+mymap.draw(screen)
 
 running = True
-nodes = generate_prm(200, 5, grid_size, bounds)
+nodes = generate_prm(30, 5, mymap)
 print(len(nodes))
 for node in nodes:
     for edge in node.edges:
-        pygame.draw.line(screen, (0, 0, 0), (node.x, node.y), (edge.x, edge.y))
-    pygame.draw.circle(screen, (255, 0,0), (node.x, node.y), node.f * 2)
+        pygame.draw.line(screen, (0, 0, 0), (node.x, node.y), (edge.x, edge.y), width = 2)
+    pygame.draw.circle(screen, (0, 50,120), (node.x, node.y), node.f * 10)
+
+# for node in nodes:
+#     if len(node.edges) > 5:
+#         print(str(node) + ", " + str(len(node.edges)))
 
 path = astar(nodes[0], nodes[1])
 for i in range(0, len(path)-1):
+    pygame.draw.circle(screen, (0, 255,0), (path[i].x, path[i].y), 5)
     pygame.draw.line(screen, (0, 255, 0), (path[i].x, path[i].y), (path[i+1].x, path[i+1].y), width=3)
 
 while running:

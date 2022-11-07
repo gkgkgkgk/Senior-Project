@@ -18,7 +18,7 @@ def astar(start_node, end_node):
         selected_node = opened.pop(0)
         closed.append(selected_node)
 
-        if selected_node == end_node:
+        if selected_node.x == end_node.x and selected_node.y == end_node.y:
             totalCost = 0
             reversePath = []
             reversePath.append(selected_node)
@@ -28,6 +28,7 @@ def astar(start_node, end_node):
                 node = node.parent
                 totalCost += node.f
             path = np.flip(reversePath)
+            print(path[-3].edges)
             print("Total Cost: " + str(totalCost) + ", Amount of Nodes: " +str(len(path)))
             pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
             print("Percent Error from Direct Path: " + str(pct_err))
@@ -37,7 +38,11 @@ def astar(start_node, end_node):
 
         for child in children:
             child.f = child.distance(end_node) + child.g
-            if ((child not in opened) and (child not in closed)):
+            if child.x == end_node.x and child.y == end_node.y:
+                child.parent = selected_node
+                opened.append(child)
+                break
+            elif ((child not in opened) and (child not in closed)):
                 child.parent = selected_node
                 opened.append(child)
             elif (child in opened) and child.parent != selected_node:
