@@ -22,7 +22,7 @@ print(len(nodes))
 for node in nodes:
     for edge in node.edges:
         pygame.draw.line(screen, (0, 0, 0), (node.x, node.y), (edge.x, edge.y), width = 2)
-    pygame.draw.circle(screen, (0, 50,120), (node.x, node.y), node.f * 10)
+    pygame.draw.circle(screen, (0, 50,120), (node.x, node.y), node.f * 3)
 
 # for node in nodes:
 #     if len(node.edges) > 5:
@@ -30,7 +30,7 @@ for node in nodes:
 
 path = astar(nodes[0], nodes[1])
 for i in range(0, len(path)-1):
-    pygame.draw.circle(screen, (0, 255,0), (path[i].x, path[i].y), 5)
+    pygame.draw.circle(screen, (0, 255,0), (path[i].x, path[i].y), 2)
     pygame.draw.line(screen, (0, 255, 0), (path[i].x, path[i].y), (path[i+1].x, path[i+1].y), width=3)
 
 while running:

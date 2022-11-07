@@ -29,6 +29,20 @@ class Map:
                 y = np.random.randint(self.bounds[0][0] / self.grid_size, 1 + self.bounds[0][1] / self.grid_size) * self.grid_size + 1
                 w = np.random.randint(1, max_size + 1) * self.grid_size -2
                 h = np.random.randint(1, max_size + 1) * self.grid_size -2
+
+                if x + w > self.bounds[0][1]:
+                    w = self.bounds[0][1] - x - 2
+                if y + h > self.bounds[1][1]:
+                    h = self.bounds[1][1] - y - 2
+                
+                if x <= self.bounds[0][0] + 1 and y <= self.bounds[1][0] + 1:
+                    x = self.bounds[0][0] + self.grid_size + 1
+                    y = self.bounds[1][0] + self.grid_size + 1
+                
+                if x + w >= self.bounds[0][1] - 1 and y + h >= self.bounds[1][1] - 1:
+                    x = self.bounds[0][1] - self.grid_size + 1
+                    y = self.bounds[1][1] - self.grid_size + 1
+
                 obstacle = Obstacle(x, y, w, h)
 
                 if obstacle.not_touching(self.obstacles):

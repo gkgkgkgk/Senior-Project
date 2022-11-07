@@ -6,8 +6,8 @@ class Node:
         self.x = x
         self.y = y
         self.edges = []
-        # self.g = np.random.randint(1, 5)
-        self.g = 1
+        self.g = np.random.randint(1, 5)
+        # self.g = 1
         self.h = 0
         self.f = self.g + self.h
         self.parent = 0
