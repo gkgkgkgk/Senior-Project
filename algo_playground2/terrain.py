@@ -32,7 +32,7 @@ class Terrain:
             py = cell.y * p
             pygame.draw.rect(screen, (cell.h, cell.h, cell.h), pygame.Rect(px, py, p, p))
     
-    def calculate_line_cost(self, a, b, screen, draw=False):
+    def calculate_line_cost(self, a, b, screen=None, draw=False):
         cells = []
         dif_x = b.x - a.x
         dif_y = b.y - a.y
@@ -46,7 +46,7 @@ class Terrain:
             if (x, y) not in cells:
                 cells.append((x, y))
         
-        if draw:
+        if draw and screen != None:
             for coord in cells:
                 pygame.draw.circle(screen, (200, 0,200), (coord[0] * self.p+ self.p/2, coord[1] * self.p+ self.p/2), 5)
             pygame.draw.circle(screen, (255, 0,255), (a.x * self.p, a.y * self.p), 10)
@@ -59,8 +59,10 @@ class Terrain:
             cell = cells[i]
             cell_shape = Polygon([(cell[0],cell[1]), (cell[0] + 1, cell[1]), (cell[0]+1, cell[1] + 1), (cell[0],cell[1]+1)]) 
             line = cell_shape.intersection(total_line)
-            print(self.sample(cell[0], cell[1]).h)
-            score += line.length * self.sample(cell[0], cell[1]).h
+            if type(line) == LineString:
+                cell_obj = self.sample(cell[0], cell[1])
+                h = 255 - cell_obj.h
+                score += (line.length * h)
 
         return score
 

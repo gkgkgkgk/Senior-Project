@@ -14,11 +14,11 @@ class PRM:
 
     def generate_points(self, terrain):
         self.nodes.append(Node(0,0))
-        self.nodes.append(Node(terrain.resolution, terrain.resolution))
+        self.nodes.append(Node(terrain.resolution-1, terrain.resolution-1))
 
         while len(self.nodes) < self.n_points:
-            num_x = np.random.randint(0, terrain.resolution+1)
-            num_y = np.random.randint(0, terrain.resolution+1)
+            num_x = np.random.randint(1, terrain.resolution)
+            num_y = np.random.randint(1, terrain.resolution)
 
             if self.sample_node(num_x, num_y) == None:
                 node = Node(num_x, num_y)
@@ -56,7 +56,12 @@ class Node:
         self.x = x
         self.y = y
         self.edges = []
-    
+        self.parent = 0
+        self.f = 0
+
+    def __repr__(self):
+        return "(" + str(self.x) + ", " + str(self.y) + ")"
+
     def draw(self, screen, terrain):
         pygame.draw.circle(screen, (0, 50,120), (self.x * terrain.p, self.y * terrain.p), 5)
     
