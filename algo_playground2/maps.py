@@ -50,6 +50,41 @@ class PRM:
         for node in self.nodes:
             node.draw(screen, terrain)
             
+class Grid:
+    def __init__(self, resolution):
+        self.nodes = []
+        self.resolution = resolution
+    
+    def generate_points(self, terrain):
+        for i in range(1, terrain.resolution, 2):
+            for j in range(1, terrain.resolution, 2):
+                self.nodes.append(Node(i, j))
+        
+        for node in self.nodes:
+            neighbors = []
+            for i in range(node.x - self.resolution - 1, node.x + self.resolution + 1):
+                for j in range(node.y - self.resolution - 1, node.y + self.resolution + 1):
+                    if i == node.x and j == node.y:
+                        continue
+                    n = self.sample_node(i, j)
+                    if n != None:
+                        neighbors.append(n)
+
+            node.edges = neighbors
+
+    def sample_node(self, x, y):
+        for node in self.nodes:
+            if x == node.x and y == node.y:
+                return node
+        return None
+                
+    
+    def draw(self, screen, terrain):
+        for node in self.nodes:
+            for edge in node.edges:
+                pygame.draw.line(screen, (180, 50, 50), (node.x * terrain.p, node.y* terrain.p), (edge.x* terrain.p, edge.y* terrain.p), width = 2)
+        for node in self.nodes:
+            node.draw(screen, terrain)
 
 class Node:
     def __init__(self, x, y):
