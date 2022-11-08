@@ -11,18 +11,15 @@ pygame.display.set_caption('Algo Playground 2.0')
 pygame.display.set_icon(pygame.image.load('assets/logo.png'))
 pygame.display.flip()
 
-terrain = Terrain(16, 32, 16)
+terrain = Terrain(64, 16, 16)
 terrain.draw(screen)
 
-prm = PRM(20)
+prm = PRM(250)
 prm.generate_points(terrain)
 prm.connect_nodes_knn(5)
 prm.draw(screen, terrain)
 
-nodea = Node(2, 1)
-nodeb = Node(5, 3)
 
-terrain.calculate_line_cost(nodea, nodeb, screen, draw=True)
 running = True
 while running:
     for event in pygame.event.get():

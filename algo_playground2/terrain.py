@@ -15,7 +15,10 @@ class Terrain:
         self.p = w / self.resolution 
 
     def sample(self, x, y):
-        return self.cells[x][y]
+        for cell in self.cells:
+            if int(x) == cell.x and int(y) == cell.y:
+                return cell
+        return None
 
     def draw(self, screen):
         colors = []
@@ -50,72 +53,16 @@ class Terrain:
             pygame.draw.circle(screen, (255, 0,255), (b.x * self.p, b.y * self.p), 10)
             pygame.draw.line(screen, (0, 0, 255), (a.x* self.p, a.y* self.p), (b.x* self.p, b.y* self.p), width = 3)
 
-        m = (b.y - a.y) / (b.x - a.x)
-        # last_x = (cells[0][0], cells[0][1])
-        # last_y = (cells[0][0], cells[0][1])
-        # start_point = (cells[0][0], cells[0][1])
-        # distance = np.sqrt((cells[0][0]* self.p - cells[-1][0]* self.p) ** 2 + (cells[0][1]* self.p - cells[-1][1]* self.p) ** 2)
-        # total_dist = 0
-        start_point = (cells[0][0], cells[0][1])
-        distances = []
-        print(cells)
-        entrance_point = (cells[0][0] * self.p, cells[0][1] * self.p)
         total_line = LineString([(a.x, a.y), (b.x, b.y)])
         score = 0
         for i in range(len(cells)):
             cell = cells[i]
             cell_shape = Polygon([(cell[0],cell[1]), (cell[0] + 1, cell[1]), (cell[0]+1, cell[1] + 1), (cell[0],cell[1]+1)]) 
             line = cell_shape.intersection(total_line)
-            print(line.length)
-            score += line.length * cell.h
-        
-            # pygame.draw.circle(screen, (120, 255, 120), , 5)
-            # pygame.draw.circle(screen, (120, 255, 120), (line.coords[2] * self.p, line.coords[3] * self.p), 5)
-            # exit_point = None
-            # y = np.sign(b.x - a.x) * m *(np.abs(cells[0][0] - cell[0])) + a.y
-            # x = np.sign(b.y - a.y) * (1/m) *(np.abs(cells[0][1] - cell[1])) + a.x
+            print(self.sample(cell[0], cell[1]).h)
+            score += line.length * self.sample(cell[0], cell[1]).h
 
-            # i1 = (cell[0], y) # intersection at bottom or top
-            # i2 = (x, cell[1]) # intersection at right or left
-
-            # print(i1, i2)
-            # if i2[0] >= cell[1] and i2[1] <= cell[1]:
-            #     exit_point = i2
-            # if i1[0] >= cell[0] and i1[0] <= cell[0]:
-            #     exit_point = i1
-            
-            # distances.append(np.sqrt((exit_point[0] - entrance_point[0]) ** 2 + (exit_point[1] - entrance_point[1]) ** 2))
-            # entrance_point = exit_point
-
-
-            # print(i1, i2)
-            # curr_distance = 0
-            # if i1 != last_x:
-            #     last_x = i1
-            #     curr_distance = np.sqrt((start_point[0] - i1[0]) ** 2 + (start_point[1] - i1[1]) ** 2)
-            #     start_point = i1
-            # if i2 != last_y:
-            #     last_y = i2
-            #     curr_distance = np.sqrt((start_point[0] - i2[0]) ** 2 + (start_point[1] - i2[1]) ** 2)
-            #     start_point = i2
-            
-            # total_dist += curr_distance
-
-
-            # pygame.draw.circle(screen, (120, 255, 120), (entrance_point[0] * self.p, entrance_point[1] * self.p), 5)
-            # pygame.draw.circle(screen, (255, 255, 0), (exit_point[0] * self.p, exit_point[1] * self.p), 3)
-            # print(cell)
-            # i1 = (cell[0]* self.p, y* self.p)
-            # i2 = (x* self.p, cell[1]* self.p)
-            # print(i1, i2)
-            # distance = np.sqrt((i2[0] - i1[0]) ** 2 + (i2[1] - i1[1]) ** 2)
-            # print(distance)
-            
-            # if draw:
-            #     pygame.draw.circle(screen, (255, 0,0), i1, 5)
-            #     pygame.draw.circle(screen, (0, 255, 0), i2, 5)
-
-        return 0
+        return score
 
 class Cell:
     def __init__(self, x, y, h):
