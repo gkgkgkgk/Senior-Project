@@ -6,6 +6,7 @@ class Astar:
         self.start_node = start_node
         self.end_node = end_node
         self.path = []
+        self.path_cost = 0
     
     def draw(self, screen, terrain):
         for i in range(len(self.path) - 1):
@@ -40,12 +41,11 @@ class Astar:
                 while node != self.start_node:
                     reversePath.append(node.parent)
                     node = node.parent
-                    totalCost += node.f
+                    totalCost += node.g
                 path = np.flip(reversePath)
-                print("Total Cost: " + str(totalCost) + ", Amount of Nodes: " +str(len(path)))
-                pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
-                print("Percent Error from Direct Path: " + str(pct_err))
+                # pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
                 self.path = path
+                self.path_cost = totalCost
                 return path
             
             children = selected_node.edges
@@ -55,12 +55,10 @@ class Astar:
 
                 if child in closed:
                     continue
-                # if child.x == self.end_node.x and child.y == self.end_node.y:
-                #     child.parent = selected_node
-                #     opened.append(child)
-                #     break
+
                 if (child not in opened) or child.f > score:
                     child.f = score
+                    child.g = terrain.calculate_line_cost(selected_node, child)
                     child.parent = selected_node
                     if child not in opened:
                         opened.append(child)

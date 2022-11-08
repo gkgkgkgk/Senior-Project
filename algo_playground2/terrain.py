@@ -1,15 +1,22 @@
 import numpy as np
 import pygame
 from colour import Color
-from noise import snoise2
+from noise import snoise3, snoise2
 from shapely.geometry import Polygon, LineString
 
 class Terrain:
-    def __init__(self, resolution, freq, octaves):
+    def __init__(self, resolution, freq, octaves, random=False):
         self.cells = []
+        self.noise = None
+        z = np.random.uniform(0, resolution)
         for x in range(resolution):
             for y in range(resolution):
-                self.cells.append(Cell(x, y, int(snoise2(x / freq, y / freq, octaves) * 127.0 + 128.0)))
+                if random:
+                    self.noise = snoise3(x / freq, y / freq, z / freq, octaves=octaves)
+                else:
+                    self.noise = snoise2(x / freq, y / freq, octaves)
+
+                self.cells.append(Cell(x, y, int(self.noise * 127.0 + 128.0)))
         self.resolution = resolution
         w, _ = pygame.display.get_surface().get_size()
         self.p = w / self.resolution 
@@ -34,6 +41,22 @@ class Terrain:
     
     def calculate_line_cost(self, a, b, screen=None, draw=False):
         cells = []
+        
+        if (b.x == a.x): # vertical line case
+            score = 0
+            for y in range(b.y, a.y):
+                left = self.sample(a.x - 1, y)
+                right = self.sample(a.x, y)
+                score += (self.normalize_weight(right.h) + self.normalize_weight(left.h)) / 2
+            return score
+        if (b.y == a.y): # horizontal line case
+            score = 0
+            for x in range(b.x, a.x):
+                top = self.sample(x, a.y - 1)
+                bottom = self.sample(x, a.y)
+                score += (self.normalize_weight(top.h) + self.normalize_weight(bottom.h)) / 2
+            return score
+
         dif_x = b.x - a.x
         dif_y = b.y - a.y
         dist = abs(dif_x) + abs(dif_y)
@@ -61,13 +84,16 @@ class Terrain:
             line = cell_shape.intersection(total_line)
             if type(line) == LineString:
                 cell_obj = self.sample(cell[0], cell[1])
-                h = 255 - cell_obj.h
+                h = self.normalize_weight(cell_obj.h)
                 score += (line.length * h)
 
         return score
-
+    
+    def normalize_weight(self, score):
+        return (255.0 - score) / 255.0
 class Cell:
     def __init__(self, x, y, h):
         self.x = x
         self.y = y
         self.h = h
+    

@@ -11,21 +11,25 @@ pygame.display.set_caption('Algo Playground 2.0')
 pygame.display.set_icon(pygame.image.load('assets/logo.png'))
 pygame.display.flip()
 
-terrain = Terrain(64, 16, 16)
+terrain = Terrain(64, 16, 16, random=True)
 terrain.draw(screen)
 
-grid = Grid(2)
-grid.generate_points(terrain)
-grid.draw(screen, terrain)
-# prm = PRM(250)
-# prm.generate_points(terrain)
-# prm.connect_nodes_knn(5)
-# prm.draw(screen, terrain)
+# grid = Grid(4)
+# grid.generate_points(terrain)
+# grid.draw(screen, terrain)
+
+prm = PRM(250)
+prm.generate_points(terrain)
+prm.connect_nodes_knn(5)
+prm.draw(screen, terrain)
 pygame.display.update()
 
-astar = Astar(grid.nodes[0], grid.nodes[-1])
+astar = Astar(prm.nodes[0], prm.nodes[1])
+# astar = Astar(grid.nodes[0], grid.nodes[-1])
 astar.find_path(terrain)
 astar.draw(screen, terrain)
+print(astar.path_cost)
+
 
 running = True
 while running:

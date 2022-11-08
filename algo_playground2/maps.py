@@ -56,8 +56,8 @@ class Grid:
         self.resolution = resolution
     
     def generate_points(self, terrain):
-        for i in range(1, terrain.resolution, 2):
-            for j in range(1, terrain.resolution, 2):
+        for i in range(1, terrain.resolution, self.resolution):
+            for j in range(1, terrain.resolution, self.resolution):
                 self.nodes.append(Node(i, j))
         
         for node in self.nodes:
@@ -93,6 +93,7 @@ class Node:
         self.edges = []
         self.parent = 0
         self.f = 0
+        self.g = 0
 
     def __repr__(self):
         return "(" + str(self.x) + ", " + str(self.y) + ")"
