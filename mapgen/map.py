@@ -1,5 +1,5 @@
 import numpy as np
-from noise import snoise3, snoise2
+from noise import Noise
 
 class Map:
     def __init__(self, cells=[], obstacles=[]):
@@ -49,20 +49,18 @@ class Map:
         y = int( width / pos[1])
         return self.sampleCell(x, y)
 
-    def generate_random_map(self, size, freq, octaves, random=False, rocks=False, rockAmount=5):
+    def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
         start = int(-size/2)
         end = int(size/2)
         if size % 2 != 0:
             end += 1
         
-        z = np.random.uniform(0, size)
+        noise = Noise(seed)
+
         for x in range(start, end):
             for y in range(start, end):
                 if not (x == 0 and y == 0):
-                    if random:
-                        self.noise = snoise3(x / freq, y / freq, z / freq, octaves=octaves)
-                    else:
-                        self.noise = snoise2(x / freq, y / freq, octaves)
+                    self.noise = noise.get_noise(x, y, freq, octaves=octaves)
 
                     weight = (self.noise)
                     self.addCell(x, y, weight)
