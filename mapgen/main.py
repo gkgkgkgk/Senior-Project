@@ -13,7 +13,7 @@ pygame.display.flip()
 drawer = Drawer(screen)
 
 my_map = Map()
-my_map.generate_random_map(64, 1/16, 16, rocks=True)
+my_map.generate_random_map(128, 1/64, 8, rocks=True)
 # my_map.addCell(1,0,0)
 # my_map.addCell(-1,0,25.5)
 # my_map.addCell(0,1,13)
