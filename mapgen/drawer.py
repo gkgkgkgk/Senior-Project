@@ -45,11 +45,10 @@ class Drawer:
             y_pos = int((center + cell_size/2 - pos[1]) / (cell_size))
 
         cell = my_map.sampleCell(x_pos, y_pos)
-        # print(cell)
-        print(x_pos, y_pos)
+
         if cell != None:
             font = pygame.font.Font('freesansbold.ttf', 16)
-            text = font.render(str(round(cell.weight, 2)) +", "+ str(round(cell.raw_weight, 2)), True, (255, 255, 255), (0, 0, 0))
+            text = font.render(str(round(cell.raw_weight, 2)), True, (255, 255, 255), (0, 0, 0))
             textRect = text.get_rect()
             textRect.center = (pos[0], pos[1])
             self.screen.blit(text, textRect)

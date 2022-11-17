@@ -54,12 +54,12 @@ class Map:
         end = int(size/2)
         if size % 2 != 0:
             end += 1
- 
+        
+        z = np.random.uniform(0, size)
         for x in range(start, end):
             for y in range(start, end):
                 if not (x == 0 and y == 0):
                     if random:
-                        z = np.random.uniform(0, size)
                         self.noise = snoise3(x / freq, y / freq, z / freq, octaves=octaves)
                     else:
                         self.noise = snoise2(x / freq, y / freq, octaves)
@@ -93,7 +93,8 @@ class Obstacle:
     def __init__(self, cells=[]):
         self.cells = cells
     
-    def random(self, x=0, y=0, weight=0.75, max_size=5):
-        for x_pos in range(x, x+max_size):
-            for y_pos in range(y, y+max_size):
-                self.cells.append(Cell(x_pos, y_pos, weight))
+    def random(self, x=0, y=0, weight=0.1, max_size=5):
+        for x_pos in range(int(x-max_size/2), int(x+max_size/2) + 1):
+            for y_pos in range(int(y-max_size/2), int(y+max_size/2)):
+                if np.sqrt(np.square(x_pos - x) + np.square(y_pos - y)) < np.square(np.random.uniform(max_size/2)):
+                    self.cells.append(Cell(x_pos, y_pos, weight))
