@@ -6,6 +6,7 @@ class Map:
         self.cells = cells
         self.addCell(0,0,0)
         self.obstacles = obstacles
+        self.grid_size = 0
 
     def sampleCell(self, x, y):
         for cell in self.cells:
@@ -17,6 +18,15 @@ class Map:
         cell = Cell(x, y, weight)
         self.cells.append(cell)
         return cell
+
+    def calculate_max_size(self):
+        min_x = min((cell.x) for cell in self.cells)
+        max_x = max((cell.x) for cell in self.cells)
+        min_y = min((cell.y) for cell in self.cells)
+        max_y = max((cell.y) for cell in self.cells)
+
+        max_size = max(abs(min_x), abs(min_y), max_x, max_y)
+        return max_size
 
     def normalize_weights(self): # makes all weights between -1 and 1
         min_weight = min((cell.raw_weight for cell in self.cells))
@@ -33,10 +43,20 @@ class Map:
             else:
                 cell.weight = (cell.raw_weight)/(max_weight)
         
-    
+    # FIX THIS.
+    def get_cell_from_pos(self, width, pos):
+        x = int(pos[0] / (width / self.size) )
+        y = int( width / pos[1])
+        return self.sampleCell(x, y)
+
     def generate_random_map(self, size, freq, octaves, random=False, rocks=False, rockAmount=5):
-        for x in range(int(-size/2), int(size/2)):
-            for y in range(int(-size/2), int(size/2)):
+        start = int(-size/2)
+        end = int(size/2)
+        if size % 2 != 0:
+            end += 1
+ 
+        for x in range(start, end):
+            for y in range(start, end):
                 if not (x == 0 and y == 0):
                     if random:
                         z = np.random.uniform(0, size)
