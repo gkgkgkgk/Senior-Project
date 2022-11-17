@@ -21,11 +21,10 @@ my_map.generate_random_map(128, 1/64, 8, rocks=True)
 # my_map.addCell(0,-5,-2)
 # my_map.addCell(1,-5,4)
 # my_map.addCell(0,-2,-5)
-my_map.normalize_weights()
 # my_map.addCell(3,-5,0)
 # my_map.addCell(0,-4,0)
 # my_map.addCell(-6,0,0)
-
+my_map.normalize_weights()
 
 drawer.drawMap(my_map, random_colors=False)
 
