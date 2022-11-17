@@ -19,15 +19,6 @@ class Map:
         self.cells.append(cell)
         return cell
 
-    def calculate_max_size(self):
-        min_x = min((cell.x) for cell in self.cells)
-        max_x = max((cell.x) for cell in self.cells)
-        min_y = min((cell.y) for cell in self.cells)
-        max_y = max((cell.y) for cell in self.cells)
-
-        max_size = max(abs(min_x), abs(min_y), max_x, max_y)
-        return max_size
-
     def normalize_weights(self): # makes all weights between -1 and 1
         min_weight = min((cell.raw_weight for cell in self.cells))
         max_weight = max((cell.raw_weight for cell in self.cells))
@@ -42,12 +33,6 @@ class Map:
                 cell.weight = (cell.raw_weight)/(max_val)
             else:
                 cell.weight = (cell.raw_weight)/(max_weight)
-        
-    # FIX THIS.
-    def get_cell_from_pos(self, width, pos):
-        x = int(pos[0] / (width / self.size) )
-        y = int( width / pos[1])
-        return self.sampleCell(x, y)
 
     def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
         start = int(-size/2)
