@@ -13,11 +13,11 @@ class Drawer:
         max_y = max((cell.y) for cell in map.cells)
 
         max_size = max(abs(min_x), abs(min_y), max_x, max_y)
-        cell_size = int(self.window_size / (max_size* 2 + 1))
+        cell_size = int(self.window_size / (max_size* 2))
 
         for cell in map.cells:
             left = cell_size * (cell.x + max_size)
-            top = cell_size * (-cell.y + max_size)
+            top = cell_size * (-cell.y + max_size - 1)
             color = self.weight_to_color(cell.weight)
 
             if random_colors:
@@ -32,8 +32,8 @@ class Drawer:
         c = 255 - (200 * abs(weight))
 
         if weight < 0:
-            return (c, 0, 0)
+            return (255, c, c)
 
-        return (0, 0, c)
+        return (c, c, 255)
 
         
