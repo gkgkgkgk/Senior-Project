@@ -7,8 +7,6 @@ class Drawer:
         self.window_size, _ = pygame.display.get_surface().get_size()
     
     def drawMap(self, my_map, random_colors=False):
-        print(len(my_map.cells))
-        # max_size = my_map.calculate_max_size()
         min_x = min((cell.x) for cell in my_map.cells)
         max_x = max((cell.x) for cell in my_map.cells)
         min_y = min((cell.y) for cell in my_map.cells)
@@ -16,7 +14,6 @@ class Drawer:
 
         max_size = max(abs(min_x), abs(min_y), max_x, max_y) + 1
         cell_size = int(self.window_size / (max_size* 2))
-        print(max_size)
 
         for cell in my_map.cells:
             center = int(self.window_size / 2)
@@ -30,19 +27,31 @@ class Drawer:
             pygame.draw.rect(self.screen, color, pygame.Rect(left, top, cell_size, cell_size))
 
     def draw_weight(self, my_map, pos):
-        max_size = my_map.calculate_max_size()
-        cell_size = int(self.window_size / (max_size* 2))
+        min_x = min((cell.x) for cell in my_map.cells)
+        max_x = max((cell.x) for cell in my_map.cells)
+        min_y = min((cell.y) for cell in my_map.cells)
+        max_y = max((cell.y) for cell in my_map.cells)
 
-        x_pos = int(pos[0] / cell_size)
-        y_pos = int(pos[1] / cell_size)
+        max_size = max(abs(min_x), abs(min_y), max_x, max_y) + 1
+        cell_size = int(self.window_size / (max_size* 2))
+        center = int(self.window_size / 2)
+
+        x_pos = -int((center - cell_size/2 - pos[0]) / (cell_size))
+        if pos[0] < center:
+            x_pos = -int((center + cell_size/2 - pos[0]) / (cell_size))
+
+        y_pos = int((center - cell_size/2 - pos[1]) / (cell_size))
+        if pos[1] < center:
+            y_pos = int((center + cell_size/2 - pos[1]) / (cell_size))
+
         cell = my_map.sampleCell(x_pos, y_pos)
-        print(cell)
+        # print(cell)
         print(x_pos, y_pos)
         if cell != None:
-            font = pygame.font.Font('freesansbold.ttf', 32)
-            text = font.render(cell.raw_weight, True, (0, 120, 0), (0, 0, 0))
+            font = pygame.font.Font('freesansbold.ttf', 16)
+            text = font.render(str(round(cell.weight, 2)) +", "+ str(round(cell.raw_weight, 2)), True, (255, 255, 255), (0, 0, 0))
             textRect = text.get_rect()
-            textRect.center = (pos[0], pos[1] - 35)
+            textRect.center = (pos[0], pos[1])
             self.screen.blit(text, textRect)
 
     def random_color(self):

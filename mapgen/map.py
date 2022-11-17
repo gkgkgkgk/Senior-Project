@@ -64,7 +64,7 @@ class Map:
                     else:
                         self.noise = snoise2(x / freq, y / freq, octaves)
 
-                    weight = (self.noise * 5)
+                    weight = (self.noise)
                     self.addCell(x, y, weight)
         
         if rocks:
