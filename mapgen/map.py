@@ -18,6 +18,11 @@ class Map:
         cell = Cell(x, y, weight)
         self.cells.append(cell)
         return cell
+    
+    def addObstacle(self, x, y):
+        obstacle = Obstacle(x, y)
+        self.obstacles.append(obstacle)
+        return obstacle
 
     def normalize_weights(self): # makes all weights between -1 and 1
         min_weight = min((cell.raw_weight for cell in self.cells))
@@ -26,7 +31,6 @@ class Map:
 
         if max_weight > max_val:
             max_val = max_weight
-
 
         for cell in self.cells:
             if cell.raw_weight < 0:
@@ -46,21 +50,21 @@ class Map:
             for y in range(start, end):
                 if not (x == 0 and y == 0):
                     self.noise = noise.get_noise(x, y, freq, octaves=octaves)
-
                     weight = (self.noise)
                     self.addCell(x, y, weight)
         
         if rocks:
             for _ in range(rockAmount):
-                o = Obstacle()
-                o.random(x=int(np.random.uniform(-size/2, size/2)), y=int(np.random.uniform(-size/2, size/2)))
-                self.obstacles.append(o)
-
-                for obstacle in self.obstacles:
-                    for cell in obstacle.cells:
-                        c = self.sampleCell(cell.x, cell.y)
-                        if c != None:
-                            c.raw_weight += cell.raw_weight
+                x = int(np.random.uniform(-size/2, size/2))
+                y = int(np.random.uniform(-size/2, size/2))
+                self.addObstacle(x, y)
+            
+            for obstacle in self.obstacles:
+                for cell in obstacle.cells:
+                    c = self.sampleCell(cell.x, cell.y)
+                    if c != None:
+                        c.raw_weight += cell.raw_weight
+                
 
 class Cell:
     def __init__(self, x, y, weight):
@@ -73,11 +77,19 @@ class Cell:
         return "(" + str(self.x) + ", " + str(self.y) + "), " + str(self.weight)
 
 class Obstacle:
-    def __init__(self, cells=[]):
+    def __init__(self, x, y, cells=None):
+        self.x = x
+        self.y = y
         self.cells = cells
+
+        max_size = 10
+        weight = np.random.uniform(2)
+        if self.cells == None:
+            self.cells = []
+            for x_pos in range(int(self.x-max_size/2), int(self.x+max_size/2) + 1):
+                for y_pos in range(int(self.y-max_size/2), int(self.y+max_size/2)):
+                    if np.sqrt(np.square(x_pos - self.x) + np.square(y_pos - self.y)) <= np.sqrt(max_size) + np.random.uniform(-1, 1):
+                        self.cells.append(Cell(x_pos, y_pos, weight))
     
-    def random(self, x=0, y=0, weight=0.1, max_size=5):
-        for x_pos in range(int(x-max_size/2), int(x+max_size/2) + 1):
-            for y_pos in range(int(y-max_size/2), int(y+max_size/2)):
-                if np.sqrt(np.square(x_pos - x) + np.square(y_pos - y)) < np.square(np.random.uniform(max_size/2)):
-                    self.cells.append(Cell(x_pos, y_pos, weight))
+    def __repr__(self):
+        return str(self.cells)        
