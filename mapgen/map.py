@@ -1,5 +1,6 @@
 import numpy as np
 from noise import Noise
+from shapely.geometry import Polygon, LineString
 
 class Map:
     def __init__(self, cells=[], obstacles=[]):
@@ -45,6 +46,8 @@ class Map:
             end += 1
         
         noise = Noise(seed)
+        if seed != None:
+            np.random.seed(seed)
 
         for x in range(start, end):
             for y in range(start, end):
@@ -64,6 +67,70 @@ class Map:
                     c = self.sampleCell(cell.x, cell.y)
                     if c != None:
                         c.raw_weight += cell.raw_weight
+    
+    def calculate_cost(self, a, b):
+        cells = []
+
+        if (b.x == a.x): # vertical line case
+            score = 0
+            for y in range(b.y, a.y):
+                left = self.sampleCell(a.x - 1, y)
+                right = self.sampleCell(a.x, y)
+                score += (self.normalize_weight(right.raw_weight) + self.normalize_weight(left.raw_weight)) / 2
+            return score
+        if (b.y == a.y): # horizontal line case
+            score = 0
+            for x in range(b.x, a.x):
+                top = self.sampleCell(x, a.y - 1)
+                bottom = self.sampleCell(x, a.y)
+                score += (self.normalize_weight(top.raw_weight) + self.normalize_weight(bottom.raw_weight)) / 2
+            return score
+
+        dif_x = b.x - a.x
+        dif_y = b.y - a.y
+        dist = abs(dif_x) + abs(dif_y)
+        dx = dif_x /dist
+        dy = dif_y /dist
+
+        for i in range(int(np.ceil(dist))):
+            x = np.floor(a.x + dx * i)
+            y = np.floor(a.y + dy * i)
+            if (x, y) not in cells:
+                cells.append((x, y))
+        
+        total_line = LineString([(a.x, a.y), (b.x, b.y)])
+        score = 0
+
+        cells_lengths = []
+        for i in range(len(cells)):
+            cell = cells[i]
+            cell_shape = Polygon([(cell[0],cell[1]), (cell[0] + 1, cell[1]), (cell[0]+1, cell[1] + 1), (cell[0],cell[1]+1)]) 
+            line = cell_shape.intersection(total_line)
+            if type(line) == LineString:
+                cell_obj = self.sampleCell(cell[0], cell[1])
+                h = self.normalize_weight(cell_obj.raw_weight)
+                score += (line.length * h)
+                cells_lengths.append((cell_obj, line.length))
+
+        print(cells_lengths)
+        score = (self.speed_cost(cells_lengths))
+        return score
+
+    def normalize_weight(self, score):
+        return (255.0 - score) / 255.0
+
+    def speed_cost(self, cells_lengths):
+        score = 0
+        max_step = 2
+        
+        for i in range(1, len(cells_lengths)):
+            cell = cells_lengths[i][0]
+            prev_cell = cells_lengths[i-1][0]
+            if cell.raw_weight - prev_cell.raw_weight > max_step:
+                score += 100 * cell.raw_weight
+            else:
+                score += 1
+        return score
                 
 
 class Cell:
@@ -74,7 +141,7 @@ class Cell:
         self.raw_weight = weight
     
     def __repr__(self):
-        return "(" + str(self.x) + ", " + str(self.y) + "), " + str(self.weight)
+        return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
 
 class Obstacle:
     def __init__(self, x, y, cells=None):
