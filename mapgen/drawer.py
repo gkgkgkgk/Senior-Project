@@ -104,29 +104,10 @@ class Drawer:
         return tuple(np.random.randint(256, size=3))
 
     def graphic(self, my_map, squish_factor=3):
-        x = []
-        y = []
-        z =[]
+        f = open('graphdata.txt', 'w')
 
         for cell in my_map.cells:
-            x.append(cell.x)
-            y.append(cell.y)
-            z.append(cell.raw_weight)
-
-        fig = plt.figure()
-        ax1 = fig.add_subplot(projection='3d')
-
-        z += abs(min(z))
-
-        bottom = np.zeros_like(z)
- 
-        width = depth = 1
-
-        ax1.bar3d(x, y, bottom, width, depth, z, shade=True, color='#d3d3d3')
-        ax1.set_zlim(0, max(z) * squish_factor)
-        plt.axis('off')
-
-        plt.show()
+            f.write('CELL,' + str(cell.x) + ',' + str(cell.y) + ',' + str(cell.raw_weight) + '\n')
 
     
     def weight_to_color(self, weight):
