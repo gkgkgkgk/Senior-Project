@@ -16,9 +16,10 @@ pygame.display.flip()
 drawer = Drawer(screen)
 
 config = RobotConfig(3, [(0, 3), (45, 1.5), (75, 0.5)], 1, 1, 75, 75)
-seed = 123456
+seed = 1234567
 my_map = Map()
-my_map.generate_random_map(64, 1/64, 8, rocks=True, seed=seed)
+my_map.generate_random_map(32, 1/64, 8, rocks=True, seed=seed)
+print(my_map)
 # my_map.addCell(1,0,0)
 # my_map.addCell(-1,0,25.5)
 # my_map.addCell(0,1,13)
@@ -31,18 +32,18 @@ my_map.generate_random_map(64, 1/64, 8, rocks=True, seed=seed)
 # my_map.addCell(-6,0,0)
 my_map.normalize_weights()
 
-path_map = PRM(100)
-path_map.generate_points(my_map, (0,0), (0, 30))
-path_map.connect_nodes_knn(5)
+# path_map = PRM(100)
+# path_map.generate_points(my_map, (0,0), (0, 30))
+# path_map.connect_nodes_knn(5)
 
 drawer.drawMap(my_map, random_colors=False)
-drawer.draw_prm(path_map, my_map)
-astar = Astar(path_map.nodes['0,0'], path_map.nodes['0,30'])
-astar.find_path(my_map)
-print(astar.path)
+# drawer.draw_prm(path_map, my_map)
+# astar = Astar(path_map.nodes['0,0'], path_map.nodes['0,30'])
+# astar.find_path(my_map)
 
-drawer.draw_path(astar, my_map)
+# drawer.draw_path(astar, my_map)
 # path = my_map.calculate_cost(p)
+
 
 running = True
 while running:
@@ -53,6 +54,8 @@ while running:
             drawer.draw_weight(my_map, pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             drawer.drawMap(my_map, random_colors=False)
-            drawer.draw_prm(path_map, my_map)
+            # drawer.draw_prm(path_map, my_map)
 
     pygame.display.update()
+
+drawer.graphic(my_map)

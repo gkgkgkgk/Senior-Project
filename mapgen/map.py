@@ -112,7 +112,6 @@ class Map:
                 score += (line.length * h)
                 cells_lengths.append((cell_obj, line.length))
 
-        print(cells_lengths)
         score = (self.speed_cost(cells_lengths))
         return score
 
@@ -150,7 +149,7 @@ class Obstacle:
         self.cells = cells
 
         max_size = 10
-        weight = np.random.uniform(2)
+        weight = np.random.uniform(low=0.1, high=0.25)
         if self.cells == None:
             self.cells = []
             for x_pos in range(int(self.x-max_size/2), int(self.x+max_size/2) + 1):
