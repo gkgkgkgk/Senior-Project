@@ -49,7 +49,7 @@ class Drawer:
 
         if cell != None:
             font = pygame.font.Font('freesansbold.ttf', 16)
-            text = font.render(str(round(cell.raw_weight, 2)), True, (255, 255, 255), (0, 0, 0))
+            text = font.render(str(cell.x) + ',' + str(cell.y) + ', '+ str(round(cell.raw_weight, 2)), True, (255, 255, 255), (0, 0, 0))
             textRect = text.get_rect()
             textRect.center = (pos[0], pos[1])
             self.screen.blit(text, textRect)
@@ -103,13 +103,16 @@ class Drawer:
     def random_color(self):
         return tuple(np.random.randint(256, size=3))
 
-    def graphic(self, my_map, squish_factor=3):
+    def graphic(self, my_map, pathfinders):
         f = open('graphdata.txt', 'w')
 
         for cell in my_map.cells:
             f.write('CELL,' + str(cell.x) + ',' + str(cell.y) + ',' + str(cell.raw_weight) + '\n')
 
-    
+        for i, path in enumerate(pathfinders):
+            for point in path.path:
+                f.write('POINT,' + str(i) + ',' + str(point.x) + ',' + str(point.y) + '\n')
+
     def weight_to_color(self, weight):
         c = 255 - (200 * abs(weight))
 

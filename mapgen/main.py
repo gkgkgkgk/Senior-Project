@@ -32,18 +32,17 @@ print(my_map)
 # my_map.addCell(-6,0,0)
 my_map.normalize_weights()
 
-# path_map = PRM(100)
-# path_map.generate_points(my_map, (0,0), (0, 30))
-# path_map.connect_nodes_knn(5)
+path_map = PRM(100)
+path_map.generate_points(my_map, (-15,14), (14, -16))
+path_map.connect_nodes_knn(5)
 
 drawer.drawMap(my_map, random_colors=False)
 # drawer.draw_prm(path_map, my_map)
-# astar = Astar(path_map.nodes['0,0'], path_map.nodes['0,30'])
-# astar.find_path(my_map)
+astar = Astar(path_map.nodes['-15,14'], path_map.nodes['14,-16'])
+astar.find_path(my_map)
 
-# drawer.draw_path(astar, my_map)
+drawer.draw_path(astar, my_map)
 # path = my_map.calculate_cost(p)
-
 
 running = True
 while running:
@@ -58,4 +57,4 @@ while running:
 
     pygame.display.update()
 
-drawer.graphic(my_map)
+drawer.graphic(my_map, [astar])

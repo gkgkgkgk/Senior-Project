@@ -5,6 +5,7 @@ document.getElementById('files').addEventListener('change',
 init();
 
 var terrainData = []
+var paths = []
 var loadedData = false
 
 function init() {
@@ -20,10 +21,11 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xd3d3d3d3 );
 
     light = new THREE.AmbientLight(0xffffff, 0.2)
     scene.add(light)
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     scene.add(directionalLight);
     // camera = new THREE.PerspectiveCamera(
     //     70,                                         //FOV
@@ -49,7 +51,7 @@ function init() {
     }, false);
 
     animate();
-}
+}   
 
 function animate() {
     if (loadedData) {
@@ -73,7 +75,7 @@ function generateMap() {
         let height = (cell.z + Math.abs(minHeight)) * 3
         let box = new THREE.Mesh(
             new THREE.BoxGeometry(1, height, 1),
-            new THREE.MeshPhongMaterial()
+            new THREE.MeshPhongMaterial({color:0xfffffff})
         );
 
         scene.add(box);
@@ -83,6 +85,27 @@ function generateMap() {
         // var outlineMesh1 = new THREE.Mesh(new THREE.BoxGeometry(1, height, 1), outlineMaterial1);
         // scene.add(outlineMesh1);
         // outlineMesh1.position.set(cell.x, (height / 2), cell.y)
+    })
+
+    const material = new MeshLineMaterial({color: 0xff0000, sizeAttenuation: 1, lineWidth:0.25});
+
+    paths.map(path => {
+        let points = []
+        path.points.map(point => {
+            let cell = terrainData.filter(cell => {
+                if (cell.x == point.x && point.y == cell.y){
+                    return cell
+                }
+            })[0]
+            let z = (cell.z + Math.abs(minHeight)) * 3.5
+            points.push(new THREE.Vector3(point.x, z, point.y))
+        })
+
+        const linePoints = new THREE.BufferGeometry().setFromPoints(new THREE.CatmullRomCurve3(points).getPoints(50));
+        const line = new MeshLine();
+        line.setGeometry(linePoints);
+        const mesh = new THREE.Mesh(line, material);
+        scene.add(mesh);
     })
 }
 
@@ -98,6 +121,13 @@ function getData(input) {
             let data = result[i].split(",")
             if (data[0] == "CELL") {
                 terrainData.push({ x: Number(data[1]), y: Number(data[2]), z: Number(data[3]) })
+            } else if (data[0] == "POINT"){
+                if (paths.length <= Number(data[1])) {
+                    let path = {path: Number(data[1]), points: [{x: Number(data[2]), y: Number(data[3])}]}
+                    paths.push(path)
+                } else {
+                    paths[Number(data[1])].points.push({x: Number(data[2]), y: Number(data[3])})
+                }
             }
         }
         loadedData = true
