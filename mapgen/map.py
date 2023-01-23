@@ -16,8 +16,28 @@ class Map:
         return None
     
     def addCell(self, x, y, weight):
-        cell = Cell(x, y, weight)
-        self.cells.append(cell)
+        cell = self.sampleCell(x, y)
+        if cell != None:
+            print(cell)
+            cell.raw_weight = weight
+            print(cell)
+        else:
+            cell = Cell(x, y, weight)
+            self.cells.append(cell)
+        
+        return cell
+    
+    def setCell(self, x, y, weight, additive = False):
+        cell = self.sampleCell(x, y)
+        if cell != None:
+            if additive:
+                cell.raw_weight += weight
+            else:
+                cell.raw_weight = weight
+        else:
+            cell = Cell(x, y, weight)
+            self.cells.append(cell)
+        
         return cell
     
     def addObstacle(self, x, y):
@@ -108,6 +128,7 @@ class Map:
             line = cell_shape.intersection(total_line)
             if type(line) == LineString:
                 cell_obj = self.sampleCell(cell[0], cell[1])
+                print(cell_obj)
                 h = self.normalize_weight(cell_obj.raw_weight)
                 score += (line.length * h)
                 cells_lengths.append((cell_obj, line.length))

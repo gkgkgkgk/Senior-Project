@@ -98,7 +98,7 @@ class Drawer:
 
             bx = (center - cell_size/2) + cell_size * (b.x)
             by = (center - cell_size/2) + cell_size * (-b.y)
-            pygame.draw.line(self.screen, (255, 0, 0), (ax, ay), (bx, by), width = 2)
+            pygame.draw.line(self.screen, (20, 255, 20), (ax, ay), (bx, by), width = 10)
 
     def random_color(self):
         return tuple(np.random.randint(256, size=3))
