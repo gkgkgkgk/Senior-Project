@@ -2,31 +2,35 @@ import numpy as np
 from noise import Noise
 from shapely.geometry import Polygon, LineString
 
+# This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
 class Map:
-    def __init__(self, cells=[], obstacles=[]):
+    # Every map is initiated with a point (0,0) which is where the robot starts (the LiDAR begins at the center of the map).
+    def __init__(self, cells=[], obstacles=[], config=[]):
         self.cells = cells
         self.addCell(0,0,0)
         self.obstacles = obstacles
-        self.grid_size = 0
+        self.config = config
 
+    # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
         for cell in self.cells:
             if int(x) == cell.x and int(y) == cell.y:
                 return cell
         return None
     
+    # A function to add a cell at a point. If te cell exists, it will overrride the cell.
     def addCell(self, x, y, weight):
         cell = self.sampleCell(x, y)
         if cell != None:
-            print(cell)
             cell.raw_weight = weight
-            print(cell)
         else:
             cell = Cell(x, y, weight)
             self.cells.append(cell)
         
         return cell
     
+    # A function to set cell values. If the cell doesn't exist, it will create it.
+    # There is also an additive option, which allows the user to add to the weight instead of overriding it.
     def setCell(self, x, y, weight, additive = False):
         cell = self.sampleCell(x, y)
         if cell != None:
@@ -40,12 +44,14 @@ class Map:
         
         return cell
     
+    # Simple function to add an obstacle.
     def addObstacle(self, x, y):
         obstacle = Obstacle(x, y)
         self.obstacles.append(obstacle)
         return obstacle
 
-    def normalize_weights(self): # makes all weights between -1 and 1
+    # Function that makes all weights between -1 and 1
+    def normalize_weights(self):
         min_weight = min((cell.raw_weight for cell in self.cells))
         max_weight = max((cell.raw_weight for cell in self.cells))
         max_val = abs(min_weight)
@@ -59,6 +65,7 @@ class Map:
             else:
                 cell.weight = (cell.raw_weight)/(max_weight)
 
+    # This function uses a noise function to generate a random map.
     def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
         start = int(-size/2)
         end = int(size/2)
@@ -88,15 +95,29 @@ class Map:
                     if c != None:
                         c.raw_weight += cell.raw_weight
     
+    # This function calculates the cost from point a to b.
     def calculate_cost(self, a, b):
         cells = []
 
-        if (b.x == a.x): # vertical line case
+        # If the path if a vertical line, it takes the average of the paths on each side of the line.
+        if (b.x == a.x):
             score = 0
             for y in range(b.y, a.y):
                 left = self.sampleCell(a.x - 1, y)
                 right = self.sampleCell(a.x, y)
-                score += (self.normalize_weight(right.raw_weight) + self.normalize_weight(left.raw_weight)) / 2
+                
+                tempScore = 0
+
+                if right != None:
+                    tempScore += self.normalize_weight(right.raw_weight)
+                if left != None:
+                    tempScore + self.normalize_weight(left.raw_weight)
+                
+                if left != None and right != None:
+                    score += tempScore / 2
+                else:
+                    score += tempScore
+
             return score
         if (b.y == a.y): # horizontal line case
             score = 0
@@ -121,6 +142,8 @@ class Map:
         total_line = LineString([(a.x, a.y), (b.x, b.y)])
         score = 0
 
+
+        # This part creates an array called cells_lengths. This array is [(cell, distance)], where cell is ((x, y), weight)
         cells_lengths = []
         for i in range(len(cells)):
             cell = cells[i]
@@ -134,10 +157,27 @@ class Map:
                 cells_lengths.append((cell_obj, line.length))
 
         score = (self.speed_cost(cells_lengths))
+        self.speed_incline_cost(cells_lengths)
         return score
 
-    def normalize_weight(self, score):
-        return (255.0 - score) / 255.0
+    # TODO: Implement
+    def speed_incline_cost(self, cells_lengths):
+        # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
+        # this assumes a linear change in height between cells, where the LiDAR measurement sits at the center of the cell.
+        score = 0
+        incline = self.config.speed_vs_incline
+
+        for i in range(1, len(cells_lengths)):
+            cell = cells_lengths
+    
+    # TODO: Implement
+    def energy_incline_cost(self, cells_lengths):
+        # using the distance per cell and the incline to determine the energy expended by the robot
+        score = 0
+        incline = self.config.speed_vs_incline
+
+        for i in range(1, len(cells_lengths)):
+            cell = cells_lengths
 
     def speed_cost(self, cells_lengths):
         score = 0
@@ -151,7 +191,10 @@ class Map:
             else:
                 score += 1
         return score
-                
+    
+    def normalize_weight(self, score):
+        return (255.0 - score) / 255.0
+    
 
 class Cell:
     def __init__(self, x, y, weight):

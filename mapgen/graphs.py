@@ -19,9 +19,8 @@ class PRM:
         while len(self.nodes) < self.n_points:
             cell = terrain.cells[np.random.randint(0, len(terrain.cells))]
 
-            plus_x = np.random.randint(-1, 1)
-            plus_y = np.random.randint(-1, 1)
-
+            plus_x = 0
+            plus_y = 0
             if self.sample_node(cell.x+plus_x, cell.y+plus_y) == None:
                 node = Node(cell.x+plus_x, cell.y+plus_y)
                 self.nodes[str(cell.x+plus_x) + "," + str(cell.y+plus_y)] = node
