@@ -3,6 +3,7 @@ from noise import Noise
 from shapely.geometry import Polygon, LineString
 
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
+# Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
     # Every map is initiated with a point (0,0) which is where the robot starts (the LiDAR begins at the center of the map).
     def __init__(self, cells=[], obstacles=[], config=[]):
@@ -10,6 +11,7 @@ class Map:
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
+        self.cell_size = 1
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -80,7 +82,7 @@ class Map:
             for y in range(start, end):
                 if not (x == 0 and y == 0):
                     self.noise = noise.get_noise(x, y, freq, octaves=octaves)
-                    weight = (self.noise)
+                    weight = (self.noise) * 20
                     self.addCell(x, y, weight)
         
         if rocks:
@@ -97,67 +99,38 @@ class Map:
     
     # This function calculates the cost from point a to b.
     def calculate_cost(self, a, b):
-        cells = []
-
-        # If the path if a vertical line, it takes the average of the paths on each side of the line.
-        if (b.x == a.x):
-            score = 0
-            for y in range(b.y, a.y):
-                left = self.sampleCell(a.x - 1, y)
-                right = self.sampleCell(a.x, y)
-                
-                tempScore = 0
-
-                if right != None:
-                    tempScore += self.normalize_weight(right.raw_weight)
-                if left != None:
-                    tempScore + self.normalize_weight(left.raw_weight)
-                
-                if left != None and right != None:
-                    score += tempScore / 2
-                else:
-                    score += tempScore
-
-            return score
-        if (b.y == a.y): # horizontal line case
-            score = 0
-            for x in range(b.x, a.x):
-                top = self.sampleCell(x, a.y - 1)
-                bottom = self.sampleCell(x, a.y)
-                score += (self.normalize_weight(top.raw_weight) + self.normalize_weight(bottom.raw_weight)) / 2
-            return score
-
-        dif_x = b.x - a.x
-        dif_y = b.y - a.y
-        dist = abs(dif_x) + abs(dif_y)
-        dx = dif_x /dist
-        dy = dif_y /dist
-
-        for i in range(int(np.ceil(dist))):
-            x = np.floor(a.x + dx * i)
-            y = np.floor(a.y + dy * i)
-            if (x, y) not in cells:
-                cells.append((x, y))
-        
-        total_line = LineString([(a.x, a.y), (b.x, b.y)])
         score = 0
+        cells = []
+        x1, y1, x2, y2 = a.x, a.y, b.x, b.y
+        
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        x, y = x1, y1
+        sx = -1 if x1 > x2 else 1
+        sy = -1 if y1 > y2 else 1
+        if dx > dy:
+            err = dx / 2.0
+            while x != x2:
+                cells.append((x, y))
+                err -= dy
+                if err < 0:
+                    y += sy
+                    err += dx
+                x += sx
+        else:
+            err = dy / 2.0
+            while y != y2:
+                cells.append((x, y))
+                err -= dx
+                if err < 0:
+                    x += sx
+                    err += dy
+                y += sy
+        cells.append((x, y))
+            
 
-
-        # This part creates an array called cells_lengths. This array is [(cell, distance)], where cell is ((x, y), weight)
-        cells_lengths = []
-        for i in range(len(cells)):
-            cell = cells[i]
-            cell_shape = Polygon([(cell[0],cell[1]), (cell[0] + 1, cell[1]), (cell[0]+1, cell[1] + 1), (cell[0],cell[1]+1)]) 
-            line = cell_shape.intersection(total_line)
-            if type(line) == LineString:
-                cell_obj = self.sampleCell(cell[0], cell[1])
-                print(cell_obj)
-                h = self.normalize_weight(cell_obj.raw_weight)
-                score += (line.length * h)
-                cells_lengths.append((cell_obj, line.length))
-
-        score = (self.speed_cost(cells_lengths))
-        self.speed_incline_cost(cells_lengths)
+        print("Cells:", cells)
+        score += self.speed_incline_cost(cells)
         return score
 
     # TODO: Implement
@@ -165,11 +138,32 @@ class Map:
         # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
         # this assumes a linear change in height between cells, where the LiDAR measurement sits at the center of the cell.
         score = 0
-        incline = self.config.speed_vs_incline
+        speed_vs_incline = self.config.speed_vs_incline
 
-        for i in range(1, len(cells_lengths)):
-            cell = cells_lengths
-    
+        for i in range(0, len(cells_lengths) - 1):
+            cell1 = self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])
+            cell2 = self.sampleCell(cells_lengths[i+1][0], cells_lengths[i+1][1])
+
+            incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
+            speeds = []
+            print("Incline: ", incline)
+            if incline <= 0:
+                speeds.append(speed_vs_incline[0][1])
+            else:
+                incline_range = []
+                for s in range(len(speed_vs_incline)):
+                    # the incline ranges look like this: [(0, 3), (45, 1.5), (75, 0.5)]
+                    if incline < speed_vs_incline[s][0]:
+                        incline_range.append(speed_vs_incline[s-1])
+                        incline_range.append(speed_vs_incline[s])
+                
+                print(incline_range)
+                speeds.append(incline_range[0][1] + (incline - incline_range[0][0]) * (incline_range[1][1] - incline_range[0][1]) / (incline_range[1][0] - incline_range[0][0]))
+
+        score = len(cells_lengths) / np.mean(speeds)
+        print(score)
+        return score
+
     # TODO: Implement
     def energy_incline_cost(self, cells_lengths):
         # using the distance per cell and the incline to determine the energy expended by the robot

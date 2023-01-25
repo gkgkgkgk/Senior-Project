@@ -20,9 +20,10 @@ config = RobotConfig(3, [(0, 3), (45, 1.5), (75, 0.5)], 1, 1, 75, 75)
 seed = 231
 my_map = Map(config=config)
 my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
-print(my_map)
 
 my_map.normalize_weights()
+# my_map.calculate_cost(my_map.sampleCell(1,1), my_map.sampleCell(-2,-1))
+# my_map.calculate_cost(my_map.sampleCell(-2,-1), my_map.sampleCell(1,1))
 
 path_map = PRM(250)
 path_map.generate_points(my_map, (-16,15), (15, -16))
@@ -31,11 +32,9 @@ path_map.connect_nodes_knn(5)
 drawer.drawMap(my_map, random_colors=False)
 drawer.draw_prm(path_map, my_map)
 
-astar = Astar(path_map.nodes['-16,15'], path_map.nodes['15,-16'])
+astar = Astar(path_map.nodes['15,-16'], path_map.nodes['-16,15'])
 astar.find_path(my_map)
 drawer.draw_path(astar, my_map)
-
-# path = my_map.calculate_cost(p)
 
 running = True
 while running:
