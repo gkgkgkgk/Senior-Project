@@ -66,17 +66,17 @@ class Drawer:
 
         for pos in prm.nodes:
             node = prm.nodes[pos]
-            x = (center - cell_size/2) + cell_size * (node.x)
-            y = (center - cell_size/2) + cell_size * (-node.y)
+            x = (center - cell_size/2) + cell_size * (node.x) + cell_size/2
+            y = (center - cell_size/2) + cell_size * (-node.y) + cell_size/2
             for edge in node.edges:
-                edge_x = (center - cell_size/2) + cell_size * (edge.x)
-                edge_y = (center - cell_size/2) + cell_size * (-edge.y)
+                edge_x = (center - cell_size/2) + cell_size * (edge.x) + cell_size/2
+                edge_y = (center - cell_size/2) + cell_size * (-edge.y) + cell_size/2
                 pygame.draw.line(self.screen, (50, 150, 50), (x, y), (edge_x, edge_y), width = 2)
 
         for pos in prm.nodes:
             node = prm.nodes[pos]
-            x = (center - cell_size/2) + cell_size * (node.x)
-            y = (center - cell_size/2) + cell_size * (-node.y)
+            x = (center - cell_size/2) + cell_size * (node.x) + cell_size/2
+            y = (center - cell_size/2) + cell_size * (-node.y) + cell_size/2
             pygame.draw.circle(self.screen, (100, 200, 100), (x, y), 5)
 
     def draw_path(self, pathfinder, my_map):
@@ -93,11 +93,11 @@ class Drawer:
             a = pathfinder.path[i]
             b = pathfinder.path[i+1]
 
-            ax = (center - cell_size/2) + cell_size * (a.x)
-            ay = (center - cell_size/2) + cell_size * (-a.y)
+            ax = (center - cell_size/2) + cell_size * (a.x) + cell_size/2
+            ay = (center - cell_size/2) + cell_size * (-a.y) + cell_size/2
 
-            bx = (center - cell_size/2) + cell_size * (b.x)
-            by = (center - cell_size/2) + cell_size * (-b.y)
+            bx = (center - cell_size/2) + cell_size * (b.x) + cell_size/2
+            by = (center - cell_size/2) + cell_size * (-b.y) + cell_size/2
             pygame.draw.line(self.screen, (20, 255, 20), (ax, ay), (bx, by), width = 10)
 
     def random_color(self):
