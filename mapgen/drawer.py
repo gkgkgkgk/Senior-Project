@@ -8,6 +8,7 @@ class Drawer:
         self.window_size, _ = pygame.display.get_surface().get_size()
     
     def drawMap(self, my_map, random_colors=False):
+        my_map.normalize_weights()
         min_x = min((cell.x) for cell in my_map.cells)
         max_x = max((cell.x) for cell in my_map.cells)
         min_y = min((cell.y) for cell in my_map.cells)
@@ -20,7 +21,7 @@ class Drawer:
             center = int(self.window_size / 2)
             left = (center - cell_size/2) + cell_size * (cell.x)
             top = (center - cell_size/2) + cell_size * (-cell.y)
-            color = self.weight_to_color(cell.weight)
+            color = self.weight_to_color(cell.normalized_weight)
 
             if random_colors:
                 color = self.random_color()

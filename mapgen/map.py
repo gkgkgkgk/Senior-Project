@@ -63,9 +63,9 @@ class Map:
 
         for cell in self.cells:
             if cell.raw_weight < 0:
-                cell.weight = (cell.raw_weight)/(max_val)
+                cell.normalized_weight = (cell.raw_weight)/(max_val)
             else:
-                cell.weight = (cell.raw_weight)/(max_weight)
+                cell.normalized_weight = (cell.raw_weight)/(max_weight)
 
     # This function uses a noise function to generate a random map.
     def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
@@ -82,7 +82,7 @@ class Map:
             for y in range(start, end):
                 if not (x == 0 and y == 0):
                     self.noise = noise.get_noise(x, y, freq, octaves=octaves)
-                    weight = (self.noise) * 20
+                    weight = (self.noise)
                     self.addCell(x, y, weight)
         
         if rocks:
@@ -130,24 +130,30 @@ class Map:
             
 
         print("Cells:", cells)
-        score += self.speed_incline_cost(cells)
+        print(self)
+        # score += self.speed_incline_cost(cells)
         return score
 
     # TODO: Implement
     def speed_incline_cost(self, cells_lengths):
         # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
         # this assumes a linear change in height between cells, where the LiDAR measurement sits at the center of the cell.
+        cells = []
+        for i in range(0, len(cells_lengths)):
+            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
+
+        distance = cells[0].distance(cells[len(cells) - 1]) * self.cell_size
         score = 0
+        
         speed_vs_incline = self.config.speed_vs_incline
 
-        for i in range(0, len(cells_lengths) - 1):
-            cell1 = self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])
-            cell2 = self.sampleCell(cells_lengths[i+1][0], cells_lengths[i+1][1])
+        for i in range(len(cells) - 1):
+            cell1 = cells[i]
+            cell2 = cells[i + 1]
 
             incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
             speeds = []
-            print("Incline: ", incline)
-            if incline <= 0:
+            if incline < 0:
                 speeds.append(speed_vs_incline[0][1])
             else:
                 incline_range = []
@@ -156,11 +162,21 @@ class Map:
                     if incline < speed_vs_incline[s][0]:
                         incline_range.append(speed_vs_incline[s-1])
                         incline_range.append(speed_vs_incline[s])
-                
-                print(incline_range)
-                speeds.append(incline_range[0][1] + (incline - incline_range[0][0]) * (incline_range[1][1] - incline_range[0][1]) / (incline_range[1][0] - incline_range[0][0]))
+                        break
 
-        score = len(cells_lengths) / np.mean(speeds)
+                speed = 0
+
+                if incline > speed_vs_incline[len(incline_range)-1][0]: # if this is higher than the last specified data point    
+                    speed = (speed_vs_incline[len(incline_range)-1][1])
+                else:
+                    speed = (incline_range[0][1] + (incline - incline_range[0][0]) * (incline_range[1][1] - incline_range[0][1]) / (incline_range[1][0] - incline_range[0][0]))
+                
+                if incline > 0:
+                    speed += speed_vs_incline[0][0]
+
+                speeds.append(speed)
+
+        score = distance / np.mean(speeds)
         print(score)
         return score
 
@@ -172,34 +188,25 @@ class Map:
 
         for i in range(1, len(cells_lengths)):
             cell = cells_lengths
-
-    def speed_cost(self, cells_lengths):
-        score = 0
-        max_step = 2
-        
-        for i in range(1, len(cells_lengths)):
-            cell = cells_lengths[i][0]
-            prev_cell = cells_lengths[i-1][0]
-            if cell.raw_weight - prev_cell.raw_weight > max_step:
-                score += 100 * cell.raw_weight
-            else:
-                score += 1
-        return score
     
     def normalize_weight(self, score):
         return (255.0 - score) / 255.0
     
 
+# TODO: implement normals, variance, etc.
 class Cell:
     def __init__(self, x, y, weight):
         self.x = x
         self.y = y
-        self.weight = weight
+        self.normalized_weight = weight
         self.raw_weight = weight
+        self.max_height = 0
+        self.min_height = 0
     
     def __repr__(self):
         return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
-
+    def distance(self, node):
+        return np.sqrt(np.square(node.x - self.x) + (np.square(node.y - self.y)))
 class Obstacle:
     def __init__(self, x, y, cells=None):
         self.x = x

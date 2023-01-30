@@ -28,7 +28,6 @@ astar = Astar(prm.nodes[0], prm.nodes[1])
 # astar = Astar(grid.nodes[0], grid.nodes[-1])
 astar.find_path(terrain)
 astar.draw(screen, terrain)
-print(astar.path_cost)
 
 
 running = True
