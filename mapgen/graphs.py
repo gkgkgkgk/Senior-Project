@@ -48,30 +48,43 @@ class PRM:
             
 class Grid:
     def __init__(self, resolution):
-        self.nodes = []
+        self.nodes = {}
         self.resolution = resolution
     
     def generate_points(self, terrain):
-        for i in range(1, terrain.resolution, self.resolution):
-            for j in range(1, terrain.resolution, self.resolution):
-                self.nodes.append(Node(i, j))
-        
-        for node in self.nodes:
-            neighbors = []
-            for i in range(node.x - self.resolution - 1, node.x + self.resolution + 1):
-                for j in range(node.y - self.resolution - 1, node.y + self.resolution + 1):
-                    if i == node.x and j == node.y:
-                        continue
-                    n = self.sample_node(i, j)
-                    if n != None:
-                        neighbors.append(n)
+        for i in range(len(terrain.cells)):
+            x = terrain.cells[i].x
+            y = terrain.cells[i].y
+            node = Node(x, y)
+            self.nodes[str(x) + "," + str(y)] = node
 
-            node.edges = neighbors
+        for pos in self.nodes:
+            node = self.nodes[pos]
+            x = node.x
+            y = node.y
+
+            # connect each cell with all 8 neighbors.
+            if self.sample_node(x+1, y) != None:
+                node.edges.append(self.sample_node(x+1, y))
+            if self.sample_node(x-1, y) != None:
+                node.edges.append(self.sample_node(x-1, y))
+            if self.sample_node(x, y+1) != None:
+                node.edges.append(self.sample_node(x, y+1))
+            if self.sample_node(x, y-1) != None:
+                node.edges.append(self.sample_node(x, y-1))
+            if self.sample_node(x+1, y+1) != None:
+                node.edges.append(self.sample_node(x+1, y+1))
+            if self.sample_node(x-1, y-1) != None:
+                node.edges.append(self.sample_node(x-1, y-1))
+            if self.sample_node(x-1, y+1) != None:
+                node.edges.append(self.sample_node(x-1, y+1))
+            if self.sample_node(x+1, y-1) != None:
+                node.edges.append(self.sample_node(x+1, y-1))
 
     def sample_node(self, x, y):
-        for node in self.nodes:
-            if x == node.x and y == node.y:
-                return node
+        key = str(x)+","+str(y)
+        if key in self.nodes.keys():
+            return self.nodes[key]
         return None
 
 

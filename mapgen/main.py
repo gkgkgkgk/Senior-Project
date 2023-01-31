@@ -1,7 +1,7 @@
 import pygame
 from map import Map
 from drawer import Drawer
-from graphs import PRM
+from graphs import PRM, Grid
 from pathfinding import Astar
 from robot import RobotConfig
 import numpy as np
@@ -103,9 +103,12 @@ for i in range(-9, 3):
 
 my_map.normalize_weights()
 
-path_map = PRM(100)
-path_map.generate_points(my_map, (-15,14), (14, -16))
-path_map.connect_nodes_knn(5)
+# path_map = PRM(350)
+# path_map.generate_points(my_map, (-15,14), (14, -16))
+# path_map.connect_nodes_knn(7)
+
+path_map = Grid(1)
+path_map.generate_points(my_map)
 
 drawer.drawMap(my_map, random_colors=False)
 drawer.draw_prm(path_map, my_map)
