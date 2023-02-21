@@ -16,7 +16,7 @@ pygame.display.flip()
 
 drawer = Drawer(screen)
 
-config = RobotConfig(3, [(0, 3), (20, 3), (45, 1.0), (75, 0.1)], 1, 1, 75, 75)
+config = RobotConfig(3, [(0, 3), (20, 1.0), (45, 1.0), (75, 0.1)], 1, 1, 75, 75)
 seed = 231
 my_map = Map(config=config)
 my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
@@ -103,12 +103,12 @@ for i in range(-9, 3):
 
 my_map.normalize_weights()
 
-path_map = PRM(700)
-path_map.generate_points(my_map, (-16,15), (15, -16))
-path_map.connect_nodes_knn(7)
+# path_map = PRM(700)
+# path_map.generate_points(my_map, (-16,15), (15, -16))
+# path_map.connect_nodes_knn(7)
 
-#path_map = Grid(1)
-#path_map.generate_points(my_map)
+path_map = Grid(1)
+path_map.generate_points(my_map)
 
 drawer.drawMap(my_map, random_colors=False)
 drawer.draw_prm(path_map, my_map)

@@ -23,7 +23,7 @@ class Astar:
 
             opened.sort(key = lambda node: node.f)
             selected_node = opened.pop(0)
-            print(selected_node)
+
             closed.append(selected_node)
 
             if selected_node.x == self.end_node.x and selected_node.y == self.end_node.y:
@@ -49,7 +49,7 @@ class Astar:
                     continue
 
                 h, g = my_map.calculate_cost(selected_node, child, self.end_node)
-                print(h, g)
+                
                 child.g = selected_node.g + g
                 child.h = h
                 child.f = child.g + child.h
