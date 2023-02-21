@@ -101,6 +101,35 @@ class Drawer:
             by = (center - cell_size/2) + cell_size * (-b.y) + cell_size/2
             pygame.draw.line(self.screen, (20, 255, 20), (ax, ay), (bx, by), width = 10)
 
+    def draw_edge_costs(self, prm, my_map, destination):
+        min_x = min((cell.x) for cell in my_map.cells)
+        max_x = max((cell.x) for cell in my_map.cells)
+        min_y = min((cell.y) for cell in my_map.cells)
+        max_y = max((cell.y) for cell in my_map.cells)
+
+        max_size = max(abs(min_x), abs(min_y), max_x, max_y) + 1
+        cell_size = int(self.window_size / (max_size* 2))
+        center = int(self.window_size / 2)
+
+        for pos in prm.nodes:
+            node = prm.nodes[pos]
+            x = (center - cell_size/2) + cell_size * (node.x) + cell_size/2
+            y = (center - cell_size/2) + cell_size * (-node.y) + cell_size/2
+            for edge in node.edges:
+                edge_x = (center - cell_size/2) + cell_size * (edge.x) + cell_size/2
+                edge_y = (center - cell_size/2) + cell_size * (-edge.y) + cell_size/2
+                pygame.draw.line(self.screen, (50, 150, 50), (x, y), (edge_x, edge_y), width = 2)
+
+                h, g = my_map.calculate_cost(node, edge, destination)
+                font = pygame.font.Font('freesansbold.ttf', 16)
+                text = font.render(str(round(g, 2)), True, (255, 255, 255), (0, 0, 0))
+                textRect = text.get_rect()
+                mid_x = (x + edge_x) / 2
+                mid_y = (y + edge_y) / 2
+                textRect.center = (mid_x, mid_y)
+                self.screen.blit(text, textRect)
+
+
     def random_color(self):
         return tuple(np.random.randint(256, size=3))
 

@@ -43,14 +43,16 @@ class Astar:
             children = selected_node.edges
 
             for child in children:
-                score = child.distance(self.end_node) + my_map.calculate_cost(selected_node, child)
-
+                # score = child.distance(self.end_node, cell_size=my_map.cell_size) + my_map.calculate_cost(selected_node, child)
+                h, g = my_map.calculate_cost(selected_node, child, self.end_node)
+                score = h + g
                 if child in closed:
                     continue
 
                 if (child not in opened) or child.f > score:
                     child.f = score
-                    child.g = my_map.calculate_cost(selected_node, child)
+                    h, g = my_map.calculate_cost(selected_node, child, self.end_node)
+                    child.g = g
                     child.parent = selected_node
                     if child not in opened:
                         opened.append(child)

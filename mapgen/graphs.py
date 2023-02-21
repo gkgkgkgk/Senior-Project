@@ -52,7 +52,7 @@ class Grid:
         self.resolution = resolution
     
     def generate_points(self, terrain):
-        for i in range(len(terrain.cells)):
+        for i in range(0, len(terrain.cells), self.resolution):
             x = terrain.cells[i].x
             y = terrain.cells[i].y
             node = Node(x, y)
@@ -64,22 +64,22 @@ class Grid:
             y = node.y
 
             # connect each cell with all 8 neighbors.
-            if self.sample_node(x+1, y) != None:
-                node.edges.append(self.sample_node(x+1, y))
-            if self.sample_node(x-1, y) != None:
-                node.edges.append(self.sample_node(x-1, y))
-            if self.sample_node(x, y+1) != None:
-                node.edges.append(self.sample_node(x, y+1))
-            if self.sample_node(x, y-1) != None:
-                node.edges.append(self.sample_node(x, y-1))
-            if self.sample_node(x+1, y+1) != None:
-                node.edges.append(self.sample_node(x+1, y+1))
-            if self.sample_node(x-1, y-1) != None:
-                node.edges.append(self.sample_node(x-1, y-1))
-            if self.sample_node(x-1, y+1) != None:
-                node.edges.append(self.sample_node(x-1, y+1))
-            if self.sample_node(x+1, y-1) != None:
-                node.edges.append(self.sample_node(x+1, y-1))
+            if self.sample_node(x+self.resolution, y) != None:
+                node.edges.append(self.sample_node(x+self.resolution, y))
+            if self.sample_node(x-self.resolution, y) != None:
+                node.edges.append(self.sample_node(x-self.resolution, y))
+            if self.sample_node(x, y+self.resolution) != None:
+                node.edges.append(self.sample_node(x, y+self.resolution))
+            if self.sample_node(x, y-self.resolution) != None:
+                node.edges.append(self.sample_node(x, y-self.resolution))
+            if self.sample_node(x+self.resolution, y+self.resolution) != None:
+                node.edges.append(self.sample_node(x+self.resolution, y+self.resolution))
+            if self.sample_node(x-self.resolution, y-self.resolution) != None:
+                node.edges.append(self.sample_node(x-self.resolution, y-self.resolution))
+            if self.sample_node(x-self.resolution, y+self.resolution) != None:
+                node.edges.append(self.sample_node(x-self.resolution, y+self.resolution))
+            if self.sample_node(x+self.resolution, y-self.resolution) != None:
+                node.edges.append(self.sample_node(x+self.resolution, y-self.resolution))
 
     def sample_node(self, x, y):
         key = str(x)+","+str(y)
@@ -106,5 +106,5 @@ class Node:
                 return node
         return None
     
-    def distance(self, node):
-        return np.sqrt((node.x - self.x) ** 2 + (node.y - self.y) ** 2)
+    def distance(self, node, cell_size=1):
+        return np.sqrt((node.x - self.x) ** 2 + (node.y - self.y) ** 2) * cell_size

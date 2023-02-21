@@ -11,7 +11,7 @@ class Map:
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
-        self.cell_size = 1
+        self.cell_size = 0.1
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -97,8 +97,8 @@ class Map:
                     if c != None:
                         c.raw_weight += cell.raw_weight
     
-    # This function calculates the cost from point a to b.
-    def calculate_cost(self, a, b):
+    # This function calculates the cost from point a to b. d is destination 
+    def calculate_cost(self, a, b, d):
         score = 0
         cells = []
         x1, y1, x2, y2 = a.x, a.y, b.x, b.y
@@ -127,12 +127,11 @@ class Map:
                     err += dy
                 y += sy
         cells.append((x, y))
-            
 
-        print("Cells:", cells)
-        print(self)
-        # score += self.speed_incline_cost(cells)
-        return score
+        return self.speed_heuristic(a, d), self.speed_incline_cost(cells)
+
+    def speed_heuristic(self, a, b):
+        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
 
     # TODO: Implement
     def speed_incline_cost(self, cells_lengths):
@@ -142,7 +141,7 @@ class Map:
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
 
-        distance = cells[0].distance(cells[len(cells) - 1]) * self.cell_size
+        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
         score = 0
         
         speed_vs_incline = self.config.speed_vs_incline
@@ -153,6 +152,7 @@ class Map:
 
             incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
             speeds = []
+
             if incline < 0:
                 speeds.append(speed_vs_incline[0][1])
             else:
@@ -177,14 +177,14 @@ class Map:
                 speeds.append(speed)
 
         score = distance / np.mean(speeds)
-        print(score)
+
         return score
 
     # TODO: Implement
     def energy_incline_cost(self, cells_lengths):
         # using the distance per cell and the incline to determine the energy expended by the robot
         score = 0
-        incline = self.config.speed_vs_incline
+        #incline = self.config.speed_vs_incline
 
         for i in range(1, len(cells_lengths)):
             cell = cells_lengths
@@ -205,8 +205,8 @@ class Cell:
     
     def __repr__(self):
         return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
-    def distance(self, node):
-        return np.sqrt(np.square(node.x - self.x) + (np.square(node.y - self.y)))
+    def distance(self, node, cell_size):
+        return np.sqrt(np.square(node.x - self.x) + (np.square(node.y - self.y))) * cell_size
 class Obstacle:
     def __init__(self, x, y, cells=None):
         self.x = x
