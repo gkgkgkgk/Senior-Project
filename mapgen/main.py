@@ -16,7 +16,7 @@ pygame.display.flip()
 
 drawer = Drawer(screen)
 
-config = RobotConfig(3, [(0, 3), (20, 2.5), (45, 2), (75, 0.1)], 1, 1, 75, 75)
+config = RobotConfig(3, [(0, 3), (20, 3), (45, 1.0), (75, 0.1)], 1, 1, 75, 75)
 seed = 231
 my_map = Map(config=config)
 my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
@@ -103,9 +103,9 @@ for i in range(-9, 3):
 
 my_map.normalize_weights()
 
-path_map = PRM(100)
+path_map = PRM(700)
 path_map.generate_points(my_map, (-16,15), (15, -16))
-path_map.connect_nodes_knn(5)
+path_map.connect_nodes_knn(7)
 
 #path_map = Grid(1)
 #path_map.generate_points(my_map)
@@ -117,7 +117,7 @@ astar = Astar(path_map.nodes['-16,15'], path_map.nodes['15,-16'])
 astar.find_path(my_map)
 drawer.draw_path(astar, my_map)
 print(astar.path_cost)
-drawer.draw_edge_costs(path_map, my_map, path_map.sample_node(15, -16))
+# drawer.draw_edge_costs(path_map, my_map, path_map.sample_node(15, -16))
 # path = my_map.calculate_cost(p)
 
 running = True

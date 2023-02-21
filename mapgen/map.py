@@ -129,6 +129,7 @@ class Map:
         cells.append((x, y))
 
         return self.speed_heuristic(a, d), self.speed_incline_cost(cells)
+        #return a.distance(d) / self.config.max_speed, a.distance(b) / self.config.max_speed
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed

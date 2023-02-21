@@ -121,8 +121,9 @@ class Drawer:
                 pygame.draw.line(self.screen, (50, 150, 50), (x, y), (edge_x, edge_y), width = 2)
 
                 h, g = my_map.calculate_cost(node, edge, destination)
-                font = pygame.font.Font('freesansbold.ttf', 16)
-                text = font.render(str(round(g, 2)), True, (255, 255, 255), (0, 0, 0))
+                font = pygame.font.Font('freesansbold.ttf', 10)
+                # text = font.render("g: " + str(round(g, 2))+ ", h:" + str(round(h, 2)), True, (255, 255, 255), (0, 0, 0))
+                text = font.render(str(round(g + h, 2)), True, (255, 255, 255), (0, 0, 0))
                 textRect = text.get_rect()
                 mid_x = (x + edge_x) / 2
                 mid_y = (y + edge_y) / 2
