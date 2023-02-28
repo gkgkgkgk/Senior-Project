@@ -12,6 +12,7 @@ class Astar:
         closed = []
 
         opened.append(self.start_node)
+        selected_node = self.start_node
         steps = 0
 
         while True:
@@ -21,9 +22,9 @@ class Astar:
                 print("No solution found!")
                 break
 
+            # this is inefficient, dont sort
             opened.sort(key = lambda node: node.f)
             selected_node = opened.pop(0)
-
             closed.append(selected_node)
 
             if selected_node.x == self.end_node.x and selected_node.y == self.end_node.y:
@@ -39,22 +40,32 @@ class Astar:
                 # pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
                 self.path = path
                 self.path_cost = totalCost
+                # print(path)
+                # for node in path:
+                #     print(node, node.g)
                 return path
             
             children = selected_node.edges
 
             for child in children:
 
-                if child in closed:
+                if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
 
                 h, g = my_map.calculate_cost(selected_node, child, self.end_node)
-                
-                child.g = selected_node.g + g
-                child.h = h
-                child.f = child.g + child.h
-                if child in opened and child.g > selected_node.g:
-                    continue
 
+                temp_g = selected_node.g + g
+                
+                if temp_g + h > child.f:
+                    continue
+                # if child in opened and temp_g > selected_node.g:
+                #     continue
+
+                child.g = temp_g
+                child.h = h
+                child.f = temp_g + child.h
                 child.parent = selected_node
-                opened.append(child)
+
+                if child not in opened:
+                    opened.append(child)
+

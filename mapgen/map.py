@@ -128,14 +128,19 @@ class Map:
                 y += sy
         cells.append((x, y))
 
-        return self.speed_heuristic(a, d), self.speed_incline_cost(cells)
+        cost_speed = self.speed_cost(cells)
+        heuristic_speed =  self.speed_heuristic(b, d)
+
+        cost = self.energy_cost(cells) + self.limitation_heuristic(cells)
+        heuristic = self.energy_heuristic(b, d)
+
+        return heuristic, cost
         #return a.distance(d) / self.config.max_speed, a.distance(b) / self.config.max_speed
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
 
-    # TODO: Implement
-    def speed_incline_cost(self, cells_lengths):
+    def speed_cost(self, cells_lengths):
         # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
         # this assumes a linear change in height between cells, where the LiDAR measurement sits at the center of the cell.
         cells = []
@@ -147,15 +152,24 @@ class Map:
         
         speed_vs_incline = self.config.speed_vs_incline
 
+        max_incline = False
+        max_step_up =  False
+        max_step_down =  False
+        speeds = []
+
         for i in range(len(cells) - 1):
             cell1 = cells[i]
             cell2 = cells[i + 1]
-
             incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
-            speeds = []
 
-            if incline < 0:
+            if cell2.raw_weight > cell1.raw_weight and abs(cell2.raw_weight - cell1.raw_weight) > self.config.max_step_height_up:
+                max_step_up = True
+            elif cell1.raw_weight > cell2.raw_weight and abs(cell1.raw_weight - cell2.raw_weight) > self.config.max_step_height_down:
+                max_step_down = True
+            elif incline < 0:
                 speeds.append(speed_vs_incline[0][1])
+            elif incline >= self.config.max_incline_up:
+                max_incline = True
             else:
                 incline_range = []
                 for s in range(len(speed_vs_incline)):
@@ -177,19 +191,95 @@ class Map:
 
                 speeds.append(speed)
 
-        score = distance / np.mean(speeds)
+        #print(max_incline, max_step_down, max_step_up)
 
+        if max_step_up or max_step_down:
+            score = 10000
+        else:
+            score = distance / np.mean(speeds)
+        # score = distance / np.mean(speeds)
         return score
 
-    # TODO: Implement
-    def energy_incline_cost(self, cells_lengths):
-        # using the distance per cell and the incline to determine the energy expended by the robot
-        score = 0
-        #incline = self.config.speed_vs_incline
+    def energy_heuristic(self, a, b):
+        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
 
-        for i in range(1, len(cells_lengths)):
-            cell = cells_lengths
+    def energy_cost(self, cells_lengths):
+        # using the distance per cell and the incline to determine the energy expended by the robot
+        cells = []
+        for i in range(0, len(cells_lengths)):
+            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
+
+        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
+        score = 0
+        
+        energy_vs_incline = self.config.energy_vs_incline
+
+        energies = []
+
+        for i in range(len(cells) - 1):
+            cell1 = cells[i]
+            cell2 = cells[i + 1]
+            incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
+
+            if incline < 0:
+                energies.append(energy_vs_incline[0][1])
+            else:
+                incline_range = []
+                for s in range(len(energy_vs_incline)):
+                    # the incline ranges look like this: [(0, 3), (45, 1.5), (75, 0.5)]
+                    if incline < energy_vs_incline[s][0]:
+                        incline_range.append(energy_vs_incline[s-1])
+                        incline_range.append(energy_vs_incline[s])
+                        break
+
+                energy = 0
+
+                if incline > energy_vs_incline[len(incline_range)-1][0]: # if this is higher than the last specified data point    
+                    energy = (energy_vs_incline[len(incline_range)-1][1])
+                else:
+                    energy = (incline_range[0][1] + (incline - incline_range[0][0]) * (incline_range[1][1] - incline_range[0][1]) / (incline_range[1][0] - incline_range[0][0]))
+                
+                if incline > 0:
+                    energy += energy_vs_incline[0][0]
+
+                energies.append(energy)
+
+        
+        score = distance * np.mean(energies)
+
+        return score
     
+    def limitation_heuristic(self, cells_lengths):
+        # using the distance per cell and the incline to determine the energy expended by the robot
+        cells = []
+        for i in range(0, len(cells_lengths)):
+            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
+
+        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
+        score = 0
+
+        max_incline = False
+        max_step_up =  False
+        max_step_down =  False
+        energies = []
+
+        for i in range(len(cells) - 1):
+            cell1 = cells[i]
+            cell2 = cells[i + 1]
+            incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
+
+            if cell2.raw_weight > cell1.raw_weight and abs(cell2.raw_weight - cell1.raw_weight) > self.config.max_step_height_up:
+                max_step_up = True
+            elif cell1.raw_weight > cell2.raw_weight and abs(cell1.raw_weight - cell2.raw_weight) > self.config.max_step_height_down:
+                max_step_down = True
+            elif incline > max_incline:
+                max_incline = True
+
+        if max_step_up or max_step_down or max_incline:
+            return 10000
+        
+        return 0
+
     def normalize_weight(self, score):
         return (255.0 - score) / 255.0
     

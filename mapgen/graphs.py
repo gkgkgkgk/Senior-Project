@@ -94,11 +94,12 @@ class Node:
         self.y = y
         self.edges = []
         self.parent = 0
-        self.f = 0
+        self.f = 100000000
         self.g = 0
+        self.h = 0
 
     def __repr__(self):
-        return "(" + str(self.x) + ", " + str(self.y) + ")"
+        return "(" + str(self.x) + ", " + str(self.y) + ")" + ", h: " + str(self.h) + ", g: " + str(self.g)
     
     def sample_edge(self, node):
         for edge in self.edges:
