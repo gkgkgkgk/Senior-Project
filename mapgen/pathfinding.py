@@ -22,9 +22,14 @@ class Astar:
                 print("No solution found!")
                 break
 
-            # this is inefficient, dont sort
-            opened.sort(key = lambda node: node.f)
-            selected_node = opened.pop(0)
+            min_f = float("inf")
+
+            for node in opened:
+                if node.f < min_f:
+                    min_f = node.f
+                    selected_node = node
+
+            opened.remove(selected_node)
             closed.append(selected_node)
 
             if selected_node.x == self.end_node.x and selected_node.y == self.end_node.y:

@@ -131,10 +131,10 @@ class Map:
         cost_speed = self.speed_cost(cells)
         heuristic_speed =  self.speed_heuristic(b, d)
 
-        cost = self.energy_cost(cells) + self.limitation_heuristic(cells)
-        heuristic = self.energy_heuristic(b, d)
+        cost_energy = self.energy_cost(cells)
+        heuristic_energy = self.energy_heuristic(b, d)
 
-        return heuristic, cost
+        return heuristic_energy, cost_energy + self.limitation_cost(cells)
         #return a.distance(d) / self.config.max_speed, a.distance(b) / self.config.max_speed
 
     def speed_heuristic(self, a, b):
@@ -249,19 +249,41 @@ class Map:
 
         return score
     
-    def limitation_heuristic(self, cells_lengths):
-        # using the distance per cell and the incline to determine the energy expended by the robot
+    def safety_heuristic(self, a, b):
+        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size
+    
+    def safety_cost(self, cells_lengths):
+        # cells = []
+        # for i in range(0, len(cells_lengths)):
+        #     cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
+
+        
+        # dangers = 0
+
+        # for i in range(len(cells) - 1):
+        #     cell1 = cells[i]
+        #     cell2 = cells[i + 1]
+            
+        #     diff = abs(cell2.raw_weight - cell1.raw_weight)
+        #     if cell2.raw_weight > cell1.raw_weight and diff > self.config.max_step_height_up:
+        #         dangers += diff / self.config.
+        #     elif cell1.raw_weight > cell2.raw_weight and diff > self.config.max_step_height_down:
+        #         max_step_down = True
+        #     elif incline > max_incline:
+        #         max_incline = True
+        
+        # score = distance * dangers
+
+        return 0
+
+    def limitation_cost(self, cells_lengths):
         cells = []
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
 
-        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
-        score = 0
-
         max_incline = False
         max_step_up =  False
         max_step_down =  False
-        energies = []
 
         for i in range(len(cells) - 1):
             cell1 = cells[i]
