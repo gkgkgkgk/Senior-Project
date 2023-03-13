@@ -11,7 +11,7 @@ class Map:
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
-        self.cell_size = 0.1
+        self.cell_size = 0.05
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -99,7 +99,6 @@ class Map:
     
     # This function calculates the cost from point a to b. d is destination 
     def calculate_cost(self, a, b, d):
-        score = 0
         cells = []
         x1, y1, x2, y2 = a.x, a.y, b.x, b.y
         
@@ -128,14 +127,28 @@ class Map:
                 y += sy
         cells.append((x, y))
 
+        intersections = []
+
+        for cell in cells:
+            square = Polygon([(cell[0] - 0.5, cell[1] + 0.5), (cell[0] + 0.5, cell[1] + 0.5), (cell[0] + 0.5, cell[1] - 0.5), (cell[0] - 0.5, cell[1] - 0.5)])
+            line = LineString([(a.x, a.y), (b.x, b.y)])
+            intersection = square.intersection(line)
+
+            if intersection.geom_type == 'LineString':
+                intersections.append(intersection.length)
+            else:
+                print("No intersection")
+                intersections.append(0)
+
+        print(cells, intersections)
+
         cost_speed = self.speed_cost(cells)
         heuristic_speed =  self.speed_heuristic(b, d)
 
         cost_energy = self.energy_cost(cells)
         heuristic_energy = self.energy_heuristic(b, d)
 
-        return heuristic_energy, cost_energy + self.limitation_cost(cells)
-        #return a.distance(d) / self.config.max_speed, a.distance(b) / self.config.max_speed
+        return heuristic_speed, cost_speed + self.limitation_cost(cells)
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
@@ -147,58 +160,15 @@ class Map:
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
 
-        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
         score = 0
-        
-        speed_vs_incline = self.config.speed_vs_incline
-
-        max_incline = False
-        max_step_up =  False
-        max_step_down =  False
-        speeds = []
-
+        distance = 0
         for i in range(len(cells) - 1):
             cell1 = cells[i]
             cell2 = cells[i + 1]
-            incline = np.degrees(np.arctan((cell2.raw_weight - cell1.raw_weight) / self.cell_size * np.sqrt(2)))
-
-            if cell2.raw_weight > cell1.raw_weight and abs(cell2.raw_weight - cell1.raw_weight) > self.config.max_step_height_up:
-                max_step_up = True
-            elif cell1.raw_weight > cell2.raw_weight and abs(cell1.raw_weight - cell2.raw_weight) > self.config.max_step_height_down:
-                max_step_down = True
-            elif incline < 0:
-                speeds.append(speed_vs_incline[0][1])
-            elif incline >= self.config.max_incline_up:
-                max_incline = True
-            else:
-                incline_range = []
-                for s in range(len(speed_vs_incline)):
-                    # the incline ranges look like this: [(0, 3), (45, 1.5), (75, 0.5)]
-                    if incline < speed_vs_incline[s][0]:
-                        incline_range.append(speed_vs_incline[s-1])
-                        incline_range.append(speed_vs_incline[s])
-                        break
-
-                speed = 0
-
-                if incline > speed_vs_incline[len(incline_range)-1][0]: # if this is higher than the last specified data point    
-                    speed = (speed_vs_incline[len(incline_range)-1][1])
-                else:
-                    speed = (incline_range[0][1] + (incline - incline_range[0][0]) * (incline_range[1][1] - incline_range[0][1]) / (incline_range[1][0] - incline_range[0][0]))
-                
-                if incline > 0:
-                    speed += speed_vs_incline[0][0]
-
-                speeds.append(speed)
-
-        #print(max_incline, max_step_down, max_step_up)
-
-        if max_step_up or max_step_down:
-            score = 10000
-        else:
-            score = distance / np.mean(speeds)
-        # score = distance / np.mean(speeds)
-        return score
+            h = np.abs(cell1.raw_weight - cell2.raw_weight)
+            l = self.cell_size * np.sqrt(2)
+            distance += np.sqrt(h ** 2 + l ** 2)
+        return distance / self.config.max_speed
 
     def energy_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
@@ -294,7 +264,7 @@ class Map:
                 max_step_up = True
             elif cell1.raw_weight > cell2.raw_weight and abs(cell1.raw_weight - cell2.raw_weight) > self.config.max_step_height_down:
                 max_step_down = True
-            elif incline > max_incline:
+            elif incline > self.config.max_incline_up:
                 max_incline = True
 
         if max_step_up or max_step_down or max_incline:
