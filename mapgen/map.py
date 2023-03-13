@@ -96,36 +96,49 @@ class Map:
                     c = self.sampleCell(cell.x, cell.y)
                     if c != None:
                         c.raw_weight += cell.raw_weight
-    
+
+    # Xiaolin Wu algorithm TODO: FIX THIS!!!!
+    def rasterize_line(self, start, end, grid_resolution=1):
+    # Compute the line direction and length
+        dx = end.x - start.x
+        dy = end.y - start.y
+        length = np.sqrt(dx**2 + dy**2)
+
+        # Compute the step size for each pixel along the line
+        if length == 0:
+            return [(start.x // grid_resolution, start.y // grid_resolution)]
+        else:
+            step_x = dx / length
+            step_y = dy / length
+
+        # Compute the starting pixel coordinates
+        x = start.x + 0.5 * step_x
+        y = start.y + 0.5 * step_y
+
+        # Rasterize the line
+        pixels = []
+        while True:
+            # Determine the nearest pixel to the line at this point
+            pixel_x = int(np.floor(x / grid_resolution))
+            pixel_y = int(np.floor(y / grid_resolution))
+            pixels.append((pixel_x, pixel_y))
+
+            # Determine the next pixel along the line
+            x += step_x
+            y += step_y
+
+            print((pixel_x, pixel_y))
+
+            # Stop rasterizing the line if we have reached the end
+            if np.sqrt((x - end.x)**2 + (y - end.y)**2) < grid_resolution:
+                break
+
+        return pixels
+
     # This function calculates the cost from point a to b. d is destination 
     def calculate_cost(self, a, b, d):
-        cells = []
-        x1, y1, x2, y2 = a.x, a.y, b.x, b.y
-        
-        dx = abs(x2 - x1)
-        dy = abs(y2 - y1)
-        x, y = x1, y1
-        sx = -1 if x1 > x2 else 1
-        sy = -1 if y1 > y2 else 1
-        if dx > dy:
-            err = dx / 2.0
-            while x != x2:
-                cells.append((x, y))
-                err -= dy
-                if err < 0:
-                    y += sy
-                    err += dx
-                x += sx
-        else:
-            err = dy / 2.0
-            while y != y2:
-                cells.append((x, y))
-                err -= dx
-                if err < 0:
-                    x += sx
-                    err += dy
-                y += sy
-        cells.append((x, y))
+        cells = self.rasterize_line(a, b)
+        print(a, b, cells)
 
         intersections = []
 
@@ -134,13 +147,15 @@ class Map:
             line = LineString([(a.x, a.y), (b.x, b.y)])
             intersection = square.intersection(line)
 
+            # print(square, line, intersection)
+
             if intersection.geom_type == 'LineString':
                 intersections.append(intersection.length)
             else:
                 print("No intersection")
                 intersections.append(0)
 
-        print(cells, intersections)
+        # print(cells, intersections)
 
         cost_speed = self.speed_cost(cells)
         heuristic_speed =  self.speed_heuristic(b, d)
