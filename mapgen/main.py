@@ -17,7 +17,7 @@ pygame.display.flip()
 drawer = Drawer(screen)
 
 # max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit, energy_vs_incline
-config = RobotConfig(3, 5, 5, 100, 90, 90, [(0, 1), (20, 5), (45, 40), (75, 50)])
+config = RobotConfig(3, 5, 5, 100, 90, 90, [(0, 1), (20, 300), (45, 400), (75, 500)])
 seed = 231
 my_map = Map(config=config)
 my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
