@@ -100,6 +100,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
     def calculate_cost(self, a, b, d):
+        print(self.safety_heuristic(a, d))
         cells = []
         x1, y1, x2, y2 = a.x, a.y, b.x, b.y
         
@@ -150,13 +151,11 @@ class Map:
 
         cost_energy = self.energy_cost(cells)
         heuristic_energy = self.energy_heuristic(b, d)
-        
-        if a.x == -3 and a.y == 8:
-            print("HERE")
-            print(a, b)
-            print(cost_energy, heuristic_energy)
 
-        return heuristic_energy, cost_energy + self.limitation_cost(cells)
+        cost_safety = self.safety_cost(cells)
+        heuristic_safety = self.safety_heuristic(b, d)
+
+        return heuristic_safety, cost_safety + self.limitation_cost(cells)
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
@@ -181,15 +180,11 @@ class Map:
     def energy_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
 
+    # using the distance per cell and the incline to determine the energy expended by the robot
     def energy_cost(self, cells_lengths):
-        # using the distance per cell and the incline to determine the energy expended by the robot
         cells = []
         for i in range(0, len(cells_lengths)):
-            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
-
-        distance = cells[0].distance(cells[len(cells) - 1], self.cell_size)
-        score = 0
-        
+            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))         
         energies = []
 
         for i in range(len(cells) - 1):
@@ -198,37 +193,29 @@ class Map:
             energy = self.cell_size * self.config.min_energy_per_unit + self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size))
             energies.append(energy)
 
-        
-        score = distance * np.mean(energies)
-
-        return score
+        return np.sum(energies)
     
     def safety_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size
     
     def safety_cost(self, cells_lengths):
-        # cells = []
-        # for i in range(0, len(cells_lengths)):
-        #     cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
-
+        cells = []
+        for i in range(0, len(cells_lengths)):
+            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))
         
-        # dangers = 0
+        safeties = []
 
-        # for i in range(len(cells) - 1):
-        #     cell1 = cells[i]
-        #     cell2 = cells[i + 1]
-            
-        #     diff = abs(cell2.raw_weight - cell1.raw_weight)
-        #     if cell2.raw_weight > cell1.raw_weight and diff > self.config.max_step_height_up:
-        #         dangers += diff / self.config.
-        #     elif cell1.raw_weight > cell2.raw_weight and diff > self.config.max_step_height_down:
-        #         max_step_down = True
-        #     elif incline > max_incline:
-        #         max_incline = True
-        
-        # score = distance * dangers
+        for i in range(len(cells) - 1):
+            cell1 = cells[i]
+            cell2 = cells[i + 1]
 
-        return 0
+            dh = cell2.raw_weight - cell1.raw_weight
+            max_val = self.config.max_step_height_up if dh > 0 else self.config.max_step_height_down
+            s = self.cell_size * ((2 ** (3 * (np.abs(dh)/max_val))))
+
+            safeties.append(s)
+
+        return np.sum(safeties)
 
     def limitation_cost(self, cells_lengths):
         cells = []
