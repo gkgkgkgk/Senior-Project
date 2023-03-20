@@ -3,15 +3,67 @@
 	<head>
 		<meta charset=utf-8>
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<title>Optimal Pathfinding</title>
+		<title>Pathfinding</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-        <canvas class="webgl"></canvas>
-        <div>
-            <h1>Testing!</h1>
+        <div id="header">
+            <img width="200px" src="https://se-images.campuslabs.com/clink/images/f5e3ebdd-61b2-4be3-8337-d55490a87cc3691c5344-5614-4b02-805f-8ebba326b8ac.jpg"/>
+            <h1>Preference-Based Path Planning for Autonomous Robots</h1>
+            <h3></h3>
+            <h3>Ayden Shankman (EE '23'), Gavri Kepets (EE '23'), and Netanel Fiorino (ME '23')</h3>
+            <h3>Senior Capstone Project Advised by Professor Carl Sable and Professor Michelle Rosen</h3>
         </div>
-         <!-- CDN Link to Three.js -->
-        <script type="module" src="./index.js"></script>
+        <div id="canvaswrapper">
+            <script type="module">
+                import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+                window.addEventListener( 'resize', onWindowResize, false );
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera( 75, 1, 0.1, 1000 );
+
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize( window.innerWidth/2, window.innerHeight/2 );
+                onWindowResize();
+                document.getElementById("canvaswrapper").appendChild( renderer.domElement );
+                const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+                const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+                const cube = new THREE.Mesh( geometry, material );
+                scene.add( cube );
+
+                camera.position.z = 5;
+                function animate() {
+                    requestAnimationFrame( animate );
+                    renderer.render( scene, camera );
+
+                    cube.rotation.x += 0.01;
+                    cube.rotation.y += 0.01;
+                }
+                animate();
+
+
+                
+                function onWindowResize(){
+                    camera.aspect = 1;
+                    camera.updateProjectionMatrix();
+                    let size = Math.min(window.innerWidth, window.innerHeight) / 2;
+                    renderer.setSize( size, size );
+                }
+            </script>
+        </div>
+        <div id="content">
+            <div>
+            <h3>The Problem</h3>
+            <p>Today, autonomous robots are used in a variety of applications, including exploration, search and rescue, manufacturing, and military operations. For any autonomous robot to travel efficiently, it must use a path-finding algorithm to determine the best path based on certain criteria, most commonly being <span style="color:blue; font-weight: bold;">SPEED</span>, <span style="color:red; font-weight: bold;">SAFETY</span>, or <span style="color:green; font-weight: bold;">ENERGY</span>. However, most autonomous robots today are catered to very specific environments and tasks, so the path-finding algorithms they deploy only cater to one criterion, such as the Mars Rover, which prioritizes safety. Some robots might want to prioritize a combination of the three criteria when looking for paths, but currently, there are no algorithms that handle this task in a way that is generalizable to any type of autonomous robot.</p>
+            </div>
+            <div>
+            <h3>The Solution</h3>
+            <p>
+                Our algorithm would take in a robot's specifications, such as its dimensions speed/energy vs incline, maximum step up and down, etc., as well as the user's preference of how much to prioritize <span style="color:blue; font-weight: bold;">SPEED</span>, <span style="color:red; font-weight: bold;">SAFETY</span>, and <span style="color:green; font-weight: bold;">ENERGY</span>. The user would then input a location for the robot to travel to, and the algorithm would generate a path that caters to the desired preferences.
+            </p>
+            </div>
+        </div>
 	</body>
 </html>
