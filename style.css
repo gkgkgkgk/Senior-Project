@@ -14,7 +14,7 @@ body {
 
 #canvaswrapper {
     display: flex; 
-	justify-content: center; /* center horizontally */ 
+	justify-content: center;
 }
 
 #content {
