@@ -1,7 +1,7 @@
 import numpy as np
 from noise import Noise
 from shapely.geometry import Polygon, LineString
-
+from cell_intersect import get_intersect_cells
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
 # Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
@@ -100,51 +100,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
     def calculate_cost(self, a, b, d):
-        print(self.safety_heuristic(a, d))
-        cells = []
-        x1, y1, x2, y2 = a.x, a.y, b.x, b.y
-        
-        dx = abs(x2 - x1)
-        dy = abs(y2 - y1)
-        x, y = x1, y1
-        sx = -1 if x1 > x2 else 1
-        sy = -1 if y1 > y2 else 1
-        if dx > dy:
-            err = dx / 2.0
-            while x != x2:
-                cells.append((x, y))
-                err -= dy
-                if err < 0:
-                    y += sy
-                    err += dx
-                x += sx
-        else:
-            err = dy / 2.0
-            while y != y2:
-                cells.append((x, y))
-                err -= dx
-                if err < 0:
-                    x += sx
-                    err += dy
-                y += sy
-        cells.append((x, y))
-
-        intersections = []
-
-        for cell in cells:
-            square = Polygon([(cell[0] - 0.5, cell[1] + 0.5), (cell[0] + 0.5, cell[1] + 0.5), (cell[0] + 0.5, cell[1] - 0.5), (cell[0] - 0.5, cell[1] - 0.5)])
-            line = LineString([(a.x, a.y), (b.x, b.y)])
-            intersection = square.intersection(line)
-
-            # print(square, line, intersection)
-
-            if intersection.geom_type == 'LineString':
-                intersections.append(intersection.length)
-            else:
-                print("No intersection")
-                intersections.append(0)
-
-        # print(cells, intersections)
+        cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
         heuristic_speed =  self.speed_heuristic(b, d)
@@ -155,7 +111,7 @@ class Map:
         cost_safety = self.safety_cost(cells)
         heuristic_safety = self.safety_heuristic(b, d)
 
-        return heuristic_safety, cost_safety + self.limitation_cost(cells)
+        return heuristic_energy, cost_energy + self.limitation_cost(cells)
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
