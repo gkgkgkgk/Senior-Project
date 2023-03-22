@@ -52,8 +52,8 @@ def get_intersect_cells(start, end, plot = True):
   
   # If line is vertical
   if(start[0] == end[0]):
-    for i in range(min(start[1],end[1]),max(start[1],end[1])+1):
-      if(i == min(start[1],end[1]) or i == max(start[1],end[1])):
+    for i in range(start[1],(end[1] + -np.sign(start[1] - end[1])), -np.sign(start[1] - end[1])):
+      if(i == start[1] or i == end[1]):
         leng = .5
       else:
         leng  = 1
@@ -61,8 +61,8 @@ def get_intersect_cells(start, end, plot = True):
       
   # If line is horizontal
   elif(start[1] == end[1]):
-    for i in range(min(start[0],end[0]),max(start[0],end[0])+1):
-      if(i == min(start[0],end[0]) or i == max(start[0],end[0])):
+    for i in range(start[0], end[0] + -np.sign(start[0] - end[0]), -np.sign(start[0] - end[0])):
+      if(i == start[0] or i == end[0]):
         leng = .5
       else:
         leng = 1
@@ -75,7 +75,7 @@ def get_intersect_cells(start, end, plot = True):
         leng = 0.70710678
       else:
         leng = 1.41421356
-      intersect_cell_lengths.append((min(start[0],end[0]) + i, min(start[1],end[1]) + i, leng))
+      intersect_cell_lengths.append((start[0] + (-np.sign(start[0] - end[0])*i), start[1] + (-np.sign(start[0] - end[0])*i), leng))
 
   # If line is diagonal with negative slope
   elif((end[1] - start[1])/(end[0] - start[0]) == -1):
@@ -84,7 +84,7 @@ def get_intersect_cells(start, end, plot = True):
         leng = 0.70710678
       else:
         leng = 1.41421356
-      intersect_cell_lengths.append((min(start[0],end[0]) + i, max(start[1],end[1]) - i, leng))
+      intersect_cell_lengths.append((start[0] + (-np.sign(start[0] - end[0])*i), start[1] - (np.sign(start[1] - end[1])*i), leng))
 
   # If line is on any other angle
   else:
@@ -111,12 +111,32 @@ def get_intersect_cells(start, end, plot = True):
         if (point[0] >= cell_x - 0.5) and (point[0] <= cell_x + 0.5) and (point[1] >= cell_y - 0.5) and (point[1] <= cell_y + 0.5):
           cell_name = str(cell_x) + ":" + str(cell_y)
           if cell_name not in int_cell_points:
-            # intersect_cells.append((cell_x,cell_y))
             int_cell_points[cell_name] = []
           int_cell_points[cell_name].append(point)
           
           if len(int_cell_points[cell_name]) == 2:
             intersect_cell_lengths.append((cell_x, cell_y, math.dist(int_cell_points[cell_name][0],int_cell_points[cell_name][1])))
+
+    # Sorting the intersect cells in the correct order
+    if (start[0] < end[0]):
+      # Sort X ascending
+      intersect_cell_lengths.sort()
+      # Bottom left to top right, sort Y ascending
+      if (start[1] < end[1]):
+        intersect_cell_lengths.sort(key=lambda a: a[1])
+      # Top left to bottom right, sort Y descending
+      else:
+        intersect_cell_lengths.sort(key=lambda a: a[1], reverse = True)
+    
+    else:
+      # Sort X descending
+      intersect_cell_lengths.sort(reverse = True)
+      # Bottom right to top left, sort Y ascending
+      if (start[1] < end[1]):
+        intersect_cell_lengths.sort(key=lambda a: a[1])
+      # Top right to bottom left, sort Y descending
+      else:
+        intersect_cell_lengths.sort(key=lambda a: a[1], reverse = True)
 
 
   # Displaying line and intersecting cells
@@ -135,10 +155,7 @@ def get_intersect_cells(start, end, plot = True):
     # Plotting which cells intersect with line
     cell_xs = [c[0] for c in intersect_cell_lengths]
     cell_ys = [c[1] for c in intersect_cell_lengths]
-    tot = sum([c[2] for c in intersect_cell_lengths])
-    print("tot: " + str(tot))
-    print("act: " + str(math.dist(start,end)))
-
+    # tot = sum([c[2] for c in intersect_cell_lengths])
     plt.scatter(cell_xs, cell_ys, color = 'red')
 
     # Showing grid cell borders
@@ -157,14 +174,12 @@ def get_intersect_cells(start, end, plot = True):
     ax.set_aspect('equal')
     plt.show()
 
-  # print(inter_cells_lengths)
   return intersect_cell_lengths
 
 
-start = [0,0]
-end = [100,101]
+start = [5,0]
+end = [0,6]
 
-# get_points_on_line(start, end)
 s = time.time()
 cells = get_intersect_cells(start,end, plot = False)
 print(time.time()-s)
