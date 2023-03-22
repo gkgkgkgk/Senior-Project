@@ -8,19 +8,30 @@ body {
     flex-direction: column;
 }
 
-#header{
+#header {
     margin-top: 5px;
 }
 
+.graphic {
+    display: flex;
+    align-items: center;
+}
+
+.sliders {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 #canvaswrapper {
-    display: flex; 
-	justify-content: center;
+    display: flex;
+    justify-content: center;
 }
 
 #content {
     text-align: left;
-    display: flex; 
-	justify-content: space-evenly;
+    display: flex;
+    justify-content: space-evenly;
     flex-direction: column;
     width: 50%;
     min-width: 750px;

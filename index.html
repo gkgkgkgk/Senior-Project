@@ -20,104 +20,117 @@
         <h3>Ayden Shankman (EE '23'), Gavri Kepets (EE '23'), and Netanel Fiorino (ME '23')</h3>
         <h3>Senior Capstone Project Advised by Professor Carl Sable and Professor Michelle Rosen</h3>
     </div>
-    <div id="canvaswrapper">
-        <script type="importmap">
-            {
-            "imports": {
-             "three": "https://cdn.skypack.dev/three/build/three.module",
-                "three/": "https://cdn.skypack.dev/three/"    
-            }
-           }
-          </script>
-        <script type="module">
-            import * as THREE from 'three';
-            import {
-                OrbitControls
-            } from 'three/examples/jsm/controls/OrbitControls';
-            window.addEventListener('resize', onWindowResize, false);
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffffff);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-            directionalLight.position.set(0, 1, 0); //default; light shining from top
-            directionalLight.castShadow = true;
-            scene.add(directionalLight);
-            directionalLight.castShadow = true
-
-            let width = 47
-            let height = 47
-            const camera = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, 0.1, 1000);
-            camera.position.set(1, 20, 30);
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
-            onWindowResize();
-            document.getElementById("canvaswrapper").appendChild(renderer.domElement);
-
-
-            camera.position.z = 5;
-
-            var controls = new OrbitControls(camera, renderer.domElement);
-            controls.rotateSpeed = .7;
-            controls.enableDamping = true;
-            controls.dampingFactor = .05;
-            controls.enableZoom = false;
-            controls.maxPolarAngle = Math.PI / 2;
-            controls.minPolarAngle = Math.PI / 6;
-
-            generateMap();
-            function animate() {
-                requestAnimationFrame(animate);
-                controls.update();
-
-                renderer.render(scene, camera);
-            }
-            animate();
-
-
-
-            function onWindowResize() {
-                camera.aspect = 1;
-                camera.updateProjectionMatrix();
-                let size = Math.min(window.innerWidth, window.innerHeight) / 1.5;
-                renderer.setSize(Math.floor(size), Math.floor(size));
-            }
-
-            function generateMap() {
-                let terrainData = []
-                for (let i = -16; i < 16; i++) {
-                    for (let j = -16; j < 16; j++) {
-                        terrainData.push({ x: i, y: j, z: Math.random() })
-                    }
+    <div class="graphic">
+        <div id="canvaswrapper">
+            <script type="importmap">
+                {
+                "imports": {
+                "three": "https://cdn.skypack.dev/three/build/three.module",
+                    "three/": "https://cdn.skypack.dev/three/"    
                 }
-                let minHeight = terrainData[0].z
-                for (let i = 0; i < terrainData.length; i++) {
-                    if (terrainData[i].z <= minHeight) {
-                        minHeight = terrainData[i].z
-                    }
+            }
+            </script>
+            <script type="module">
+                import * as THREE from 'three';
+                import {
+                    OrbitControls
+                } from 'three/examples/jsm/controls/OrbitControls';
+                window.addEventListener('resize', onWindowResize, false);
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xffffff);
+
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+                directionalLight.position.set(0, 1, 0); //default; light shining from top
+                directionalLight.castShadow = true;
+                scene.add(directionalLight);
+                directionalLight.castShadow = true
+
+                let width = 47
+                let height = 47
+                const camera = new THREE.OrthographicCamera(width / - 2, width / 2, height / 2, height / - 2, 0.1, 1000);
+                camera.position.set(1, 20, 30);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth / 2, window.innerHeight / 2);
+                onWindowResize();
+                document.getElementById("canvaswrapper").appendChild(renderer.domElement);
+
+
+                camera.position.z = 5;
+
+                var controls = new OrbitControls(camera, renderer.domElement);
+                controls.rotateSpeed = .7;
+                controls.enableDamping = true;
+                controls.dampingFactor = .05;
+                controls.enableZoom = false;
+                controls.maxPolarAngle = Math.PI / 2;
+                controls.minPolarAngle = Math.PI / 6;
+
+                generateMap();
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+
+
+                function onWindowResize() {
+                    camera.aspect = 1;
+                    camera.updateProjectionMatrix();
+                    let size = Math.min(window.innerWidth, window.innerHeight) / 1.5;
+                    renderer.setSize(Math.floor(size), Math.floor(size));
                 }
 
-                minHeight -= 0.001
-                let box_mat = new THREE.MeshStandardMaterial({ color: 0xfffffff })
+                function generateMap() {
+                    let terrainData = []
+                    for (let i = -16; i < 16; i++) {
+                        for (let j = -16; j < 16; j++) {
+                            terrainData.push({ x: i, y: j, z: Math.random() })
+                        }
+                    }
+                    let minHeight = terrainData[0].z
+                    for (let i = 0; i < terrainData.length; i++) {
+                        if (terrainData[i].z <= minHeight) {
+                            minHeight = terrainData[i].z
+                        }
+                    }
 
-                terrainData.map(cell => {
-                    let height = (cell.z + Math.abs(minHeight)) * 3
-                    let box = new THREE.Mesh(
-                        new THREE.BoxGeometry(1, height, 1),
-                        box_mat
-                    );
-                    box.castShadow = true; //default is false
-                    box.receiveShadow = false;
+                    minHeight -= 0.001
+                    let box_mat = new THREE.MeshStandardMaterial({ color: 0xfffffff })
 
-                    scene.add(box);
-                    box.position.set(cell.x, (height / 2), cell.y)
+                    terrainData.map(cell => {
+                        let height = (cell.z + Math.abs(minHeight)) * 3
+                        let box = new THREE.Mesh(
+                            new THREE.BoxGeometry(1, height, 1),
+                            box_mat
+                        );
+                        box.castShadow = true; //default is false
+                        box.receiveShadow = false;
 
-                    // var outlineMaterial1 = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
-                    // var outlineMesh1 = new THREE.Mesh(new THREE.BoxGeometry(1, height, 1), outlineMaterial1);
-                    // scene.add(outlineMesh1);
-                    // outlineMesh1.position.set(cell.x, (height / 2), cell.y)
-                })
-            }
-        </script>
+                        scene.add(box);
+                        box.position.set(cell.x, (height / 2), cell.y)
+
+                        // var outlineMaterial1 = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true });
+                        // var outlineMesh1 = new THREE.Mesh(new THREE.BoxGeometry(1, height, 1), outlineMaterial1);
+                        // scene.add(outlineMesh1);
+                        // outlineMesh1.position.set(cell.x, (height / 2), cell.y)
+                    })
+                }
+            </script>
+        </div>
+        <div class="sliders">
+            <label for="speed-slider">Speed</label>
+            <input type="range" id="speed-slider" name="speed" min="0" max="100" value="50">
+            <label for="safety-slider">Safety</label>
+            <input type="range" id="energy-slider" name="safety" min="0" max="100" value="50">
+            <label for="energy-slider">Energy</label>
+            <input type="range" id="energy-slider" name="energy" min="0" max="100" value="50">
+            <hr>
+            <button>Generate Path!</button>
+            <button>Clear Paths</button>
+        </div>
     </div>
     <div id="content">
         <div>
