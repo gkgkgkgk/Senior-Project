@@ -11,7 +11,7 @@ class Map:
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
-        self.cell_size = 0.05
+        self.cell_size = 0.075
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -99,7 +99,7 @@ class Map:
 
 
     # This function calculates the cost from point a to b. d is destination 
-    def calculate_cost(self, a, b, d):
+    def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -108,10 +108,13 @@ class Map:
         cost_energy = self.energy_cost(cells)
         heuristic_energy = self.energy_heuristic(b, d)
 
-        cost_safety = self.safety_cost(cells)
+        cost_safety = self.safety_cost(cells, o)
         heuristic_safety = self.safety_heuristic(b, d)
 
-        return heuristic_energy, cost_energy + self.limitation_cost(cells)
+        heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
+        cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
+
+        return heuristic, cost + self.limitation_cost(cells)
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
@@ -154,12 +157,13 @@ class Map:
     def safety_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size
     
-    def safety_cost(self, cells_lengths):
+    def safety_cost(self, cells_lengths, o):
         cells = []
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))
         
-        safeties = []
+        step_safety = 0
+        distance = np.sqrt((cells[len(cells)-1].x - cells[0].x) ** 2 + (cells[len(cells)-1].y - cells[0].y) ** 2) * self.cell_size
 
         for i in range(len(cells) - 1):
             cell1 = cells[i]
@@ -167,11 +171,27 @@ class Map:
 
             dh = cell2.raw_weight - cell1.raw_weight
             max_val = self.config.max_step_height_up if dh > 0 else self.config.max_step_height_down
-            s = self.cell_size * ((2 ** (3 * (np.abs(dh)/max_val))))
+            s = ((2 ** ((np.abs(dh)/max_val))) - 1)
+            
+            if s > step_safety:
+                step_safety = s
+        
+        turn_radius = 0
+        if o != None:
+            turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
+            turn_radius = abs(turn_radius) / 180
 
-            safeties.append(s)
+        return turn_radius + step_safety
 
-        return np.sum(safeties)
+    
+    def angle_between_points(self, a, b, c):
+        ba = np.array(b) - np.array(a)
+        bc = np.array(c) - np.array(b)
+
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
+
+        return np.degrees(angle)
 
     def limitation_cost(self, cells_lengths):
         cells = []

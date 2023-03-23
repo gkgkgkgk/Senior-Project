@@ -57,7 +57,7 @@ class Astar:
                 if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
 
-                h, g = my_map.calculate_cost(selected_node, child, self.end_node)
+                h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None)
 
                 temp_g = selected_node.g + g
                 
