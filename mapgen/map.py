@@ -62,10 +62,20 @@ class Map:
             max_val = max_weight
 
         for cell in self.cells:
-            if cell.raw_weight < 0:
+            if cell.raw_weight < 0 and max_val != 0:
                 cell.normalized_weight = (cell.raw_weight)/(max_val)
-            else:
+            elif max_weight != 0:
                 cell.normalized_weight = (cell.raw_weight)/(max_weight)
+
+    def generate_blank_map(self, size):
+        start = int(-size/2)
+        end = int(size/2)
+        if size % 2 != 0:
+            end += 1
+
+        for x in range(start, end):
+            for y in range(start, end):
+                self.addCell(x,y,0)
 
     # This function uses a noise function to generate a random map.
     def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
@@ -162,8 +172,8 @@ class Map:
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))
         
+        #step safety is between 0 and 1, depending on how close the height is to the maximum step height.
         step_safety = 0
-        distance = np.sqrt((cells[len(cells)-1].x - cells[0].x) ** 2 + (cells[len(cells)-1].y - cells[0].y) ** 2) * self.cell_size
 
         for i in range(len(cells) - 1):
             cell1 = cells[i]
@@ -176,12 +186,13 @@ class Map:
             if s > step_safety:
                 step_safety = s
         
+        # turn radius is between 0 and 1, depending on how close the turn radius is to a full 180
         turn_radius = 0
         if o != None:
             turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
             turn_radius = abs(turn_radius) / 180
 
-        return turn_radius + step_safety
+        return (turn_radius + step_safety) /2
 
     
     def angle_between_points(self, a, b, c):
@@ -214,10 +225,31 @@ class Map:
             elif incline > self.config.max_incline_up:
                 max_incline = True
 
+        self.check_clearence(cells);
+
         if max_step_up or max_step_down or max_incline:
             return 10000
         
         return 0
+
+    def check_clearence(self, cells):
+        start = cells[0];
+        end = cells[len(cells)-1]
+        # slope = (end.y - start.y) / (end.x - start.x)
+        # inv_slope = -1/slope
+        for i in range(len(cells)-1):
+            get_intersect_cells([cells[i].x, cells[i].y], [end.x, end.y], plot = False)
+
+        # for j in range(-offset/2, offset/2):
+        #     offset = self.config.width / self.cell_size
+
+        #     if offset % 2 == 0:
+        #         offset += 1
+        #     else:
+        #         offset += 2
+            
+            #for i in range(cells):
+
 
     def normalize_weight(self, score):
         return (255.0 - score) / 255.0

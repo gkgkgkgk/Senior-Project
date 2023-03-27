@@ -2,9 +2,10 @@ import numpy as np
 from shapely.geometry import Polygon, LineString
 
 class PRM:
-    def __init__(self, n_points):
+    def __init__(self, n_points, seed):
         self.n_points = n_points
         self.nodes = {}
+        np.random.seed(seed)
 
     def sample_node(self, x, y):
         key = str(x)+","+str(y)

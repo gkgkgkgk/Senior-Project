@@ -1,12 +1,13 @@
 import numpy as np
 # This is a simple class to keep track of the robot specifications.
 class RobotConfig:
-    def user_init(self, mass, friction, wheel_diameter, gravity = 9.8):
+    def user_init(self, mass, friction, wheel_diameter, width, gravity = 9.8):
         self.mass = mass
         self.gravity = gravity
         self.friction = friction
         self.wheel_diameter = wheel_diameter
         self.gravity = gravity
+        self.width = width
 
     def __init__(self, max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit):
         self.max_speed = max_speed
