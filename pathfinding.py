@@ -1,5 +1,4 @@
 import numpy as np
-import pygame
 
 class Astar:
     def __init__(self, start_node, end_node):
@@ -7,19 +6,13 @@ class Astar:
         self.end_node = end_node
         self.path = []
         self.path_cost = 0
-    
-    def draw(self, screen, terrain):
-        for i in range(len(self.path) - 1):
-            a = self.path[i]
-            b = self.path[i+1]
-            pygame.draw.line(screen, (0, 255, 50), (a.x * terrain.p, a.y* terrain.p), (b.x* terrain.p, b.y* terrain.p), width = 2)
 
-
-    def find_path(self, terrain):
+    def find_path(self, my_map):
         opened = []
         closed = []
 
         opened.append(self.start_node)
+        selected_node = self.start_node
         steps = 0
 
         while True:
@@ -29,8 +22,14 @@ class Astar:
                 print("No solution found!")
                 break
 
-            opened.sort(key = lambda node: node.f)
-            selected_node = opened.pop(0)
+            min_f = float("inf")
+
+            for node in opened:
+                if node.f < min_f:
+                    min_f = node.f
+                    selected_node = node
+
+            opened.remove(selected_node)
             closed.append(selected_node)
 
             if selected_node.x == self.end_node.x and selected_node.y == self.end_node.y:
@@ -46,19 +45,32 @@ class Astar:
                 # pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
                 self.path = path
                 self.path_cost = totalCost
+                # print(path)
+                # for node in path:
+                #     print(node, node.g)
                 return path
             
             children = selected_node.edges
 
             for child in children:
-                score = child.distance(self.end_node) + terrain.calculate_line_cost(selected_node, child)
 
-                if child in closed:
+                if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
 
-                if (child not in opened) or child.f > score:
-                    child.f = score
-                    child.g = terrain.calculate_line_cost(selected_node, child)
-                    child.parent = selected_node
-                    if child not in opened:
-                        opened.append(child)
+                h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None)
+
+                temp_g = selected_node.g + g
+                
+                if temp_g + h > child.f:
+                    continue
+                # if child in opened and temp_g > selected_node.g:
+                #     continue
+
+                child.g = temp_g
+                child.h = h
+                child.f = temp_g + child.h
+                child.parent = selected_node
+
+                if child not in opened:
+                    opened.append(child)
+
