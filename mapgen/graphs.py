@@ -1,10 +1,11 @@
 import numpy as np
-from shapely.geometry import Polygon, LineString
+from cell_intersect import get_intersect_cells
 
 class PRM:
-    def __init__(self, n_points, seed):
+    def __init__(self, n_points, seed, my_map):
         self.n_points = n_points
         self.nodes = {}
+        self.my_map = my_map
         np.random.seed(seed)
 
     def sample_node(self, x, y):
@@ -37,11 +38,17 @@ class PRM:
         nodes = []
         i = k
         for child in nearest:
-            i -= 1
-            if node.sample_edge(self.nodes[child]) == None:
-                nodes.append(self.nodes[child])
-            if self.nodes[child].sample_edge(node) == None:
-                self.nodes[child].edges.append(node)
+            limit = False
+            # cells = get_intersect_cells([node.x, node.y], [self.nodes[child].x, self.nodes[child].y])
+            # if self.my_map.limitation_cost(cells, check_clearence=True) > 0:
+            #     limit = True
+            
+            if not limit:
+                i -= 1
+                if node.sample_edge(self.nodes[child]) == None:
+                    nodes.append(self.nodes[child])
+                if self.nodes[child].sample_edge(node) == None:
+                    self.nodes[child].edges.append(node)
             if i <= 0:
                 break
 
