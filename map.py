@@ -1,6 +1,5 @@
 import numpy as np
 from noise import Noise
-from shapely.geometry import Polygon, LineString
 from cell_intersect import get_intersect_cells
 import time
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
