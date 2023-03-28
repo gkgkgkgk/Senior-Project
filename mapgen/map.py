@@ -2,12 +2,14 @@ import numpy as np
 from noise import Noise
 from shapely.geometry import Polygon, LineString
 from cell_intersect import get_intersect_cells
+import time
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
 # Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
     # Every map is initiated with a point (0,0) which is where the robot starts (the LiDAR begins at the center of the map).
     def __init__(self, cells=[], obstacles=[], config=[]):
         self.cells = cells
+        self.cells_map = {}
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
@@ -17,6 +19,10 @@ class Map:
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
+        if str(x)+","+str(y) in self.cells_map:
+            return self.cells_map[str(x)+","+str(y)]
+
+        return None
         for cell in self.cells:
             if int(x) == cell.x and int(y) == cell.y:
                 return cell
@@ -30,6 +36,7 @@ class Map:
         else:
             cell = Cell(x, y, weight)
             self.cells.append(cell)
+            self.cells_map[str(x)+","+str(y)] = cell
         
         return cell
     
@@ -45,6 +52,7 @@ class Map:
         else:
             cell = Cell(x, y, weight)
             self.cells.append(cell)
+            self.cells_map[str(x)+","+str(y)] = cell
         
         return cell
     
@@ -117,7 +125,8 @@ class Map:
 
 
     # This function calculates the cost from point a to b. d is destination 
-    def calculate_cost(self, a, b, d, o, speed_weight = 1 , energy_weight = 0, safety_weight = .1):
+
+    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 0):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -132,7 +141,7 @@ class Map:
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
 
-        return heuristic, cost + self.limitation_cost(cells)
+        return heuristic, cost + self.limitation_cost(cells, check_clearence = True)
 
     def speed_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
@@ -150,7 +159,7 @@ class Map:
             cell1 = cells[i]
             cell2 = cells[i + 1]
             h = np.abs(cell1.raw_weight - cell2.raw_weight)
-            l = self.cell_size * np.sqrt(2)
+            l = cells_lengths[i][2]
             distance += np.sqrt(h ** 2 + l ** 2)
         return distance / self.config.max_speed
 
@@ -234,7 +243,7 @@ class Map:
 
         return np.degrees(angle)
 
-    def limitation_cost(self, cells_lengths):
+    def limitation_cost(self, cells_lengths, check_clearence=False):
         cells = []
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
@@ -255,13 +264,17 @@ class Map:
             elif incline > self.config.max_incline_up:
                 max_incline = True
 
-        self.check_clearence(cells)
+        clearence = True
 
-        if max_step_up or max_step_down or max_incline:
+        if check_clearence:
+            clearence = self.check_clearence(cells)
+        if max_step_up or max_step_down or max_incline or not clearence:
             return 10000
         
         return 0
 
+    # TODO: IMPLEMENT THIS USING TRANSLATION AND SINGLE CALCULATION
+    # either we can use a big rectanlge bounding box and check every square and its distance to the line, or we can use a rotated rectangle and check every box.
     def check_clearence(self, cells):
         start = cells[0]
         end = cells[len(cells)-1]
@@ -279,7 +292,31 @@ class Map:
         #         offset += 2
             
             #for i in range(cells):
+        length = int((self.config.width / self.cell_size) / 2)
+        if length == 0:
+            length = 1
 
+        for cell in cells:
+            for x in range(cell.x - length, cell.x + length + 1):
+                for y in range(cell.y - length, cell.y + length + 1):
+                    c = self.sampleCell(x, y)
+                    if c != None and np.abs(c.raw_weight - cell.raw_weight) > self.config.max_step_height_up:
+                        return False
+        # for cell in cells:
+        #     x1 = cell.x - length
+        #     x2 = cell.x + length
+
+        #     y1 = cell.y - length
+        #     y2 = cell.y + length
+
+
+        #     for x in range(x1, x2 + 1):
+        #         for y in range(y1, y2 + 1):
+        #             c = self.sampleCell(x, y)
+        #             if c != None and c.distance(cell, self.cell_size) < (self.config.width / 2) and np.abs(c.raw_weight - cell.raw_weight) > self.config.max_step_height_up:
+        #                 return False
+
+        return True
 
     def normalize_weight(self, score):
         return (255.0 - score) / 255.0
