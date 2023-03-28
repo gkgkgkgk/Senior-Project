@@ -9,7 +9,10 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     path = example()
-    return json.dumps(path)
+    pathlist = []
+    for node in path:
+        pathlist.append((node.x, node.y))
+    return json.dumps(pathlist)
 
 
 if __name__ == '__main__':
