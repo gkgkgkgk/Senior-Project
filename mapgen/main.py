@@ -19,7 +19,7 @@ drawer = Drawer(screen)
 
 # max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit, energy_vs_incline
 config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
-config.user_init(20, 0.01, 0.225, 1)
+config.user_init(20, 0.01, 1, 0.225)
 seed = 231
 my_map = Map(config=config)
 my_map.generate_blank_map(32)
@@ -104,16 +104,8 @@ my_map.generate_blank_map(32)
 #     for j in range(-14, -2):
 #         my_map.setCell(i, j, np.random.uniform() / 7.5, additive = True)
 
-# my_map.setCell(1, 1, 1.0)
-# my_map.setCell(-2, -2, 1.0)
-
-for i in range(5):
-   for j in range(5):
-        my_map.setCell(10 + i, 6 + j, np.random.uniform())
-
-for i in range(5):
-   for j in range(5):
-        my_map.setCell(-7 + i, 5 + j, np.random.uniform())
+my_map.setCell(1, 1, 1.0)
+my_map.setCell(-2, -2, 1.0)
 
 my_map.normalize_weights()
 
@@ -138,6 +130,7 @@ startTime = time.perf_counter()
 astar.find_path(my_map)
 print("pathfinding:", time.perf_counter() - startTime)
 drawer.draw_path(astar, my_map)
+
 # drawer.draw_edge_costs(path_map, my_map, path_map.sample_node(15, -16))
 # print(my_map.calculate_cost(my_map.sampleCell(-6, 3), my_map.sampleCell(-7, 2), my_map.sampleCell(15, -16)))
 
@@ -150,6 +143,7 @@ while running:
             drawer.draw_weight(my_map, pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             drawer.drawMap(my_map, random_colors=False)
-            # drawer.draw_prm(path_map, my_map)
+            drawer.draw_prm(path_map, my_map)
+            drawer.draw_path(astar, my_map)
 
     pygame.display.update()

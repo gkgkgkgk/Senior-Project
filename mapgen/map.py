@@ -109,7 +109,7 @@ class Map:
 
 
     # This function calculates the cost from point a to b. d is destination 
-    def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1):
+    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 0):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -225,9 +225,7 @@ class Map:
             elif incline > self.config.max_incline_up:
                 max_incline = True
 
-        self.check_clearence(cells);
-
-        if max_step_up or max_step_down or max_incline:
+        if max_step_up or max_step_down or max_incline or not self.check_clearence(cells):
             return 10000
         
         return 0
@@ -235,21 +233,76 @@ class Map:
     def check_clearence(self, cells):
         start = cells[0];
         end = cells[len(cells)-1]
-        # slope = (end.y - start.y) / (end.x - start.x)
-        # inv_slope = -1/slope
-        for i in range(len(cells)-1):
-            get_intersect_cells([cells[i].x, cells[i].y], [end.x, end.y], plot = False)
 
-        # for j in range(-offset/2, offset/2):
-        #     offset = self.config.width / self.cell_size
+        ray_length = int(self.config.width / self.cell_size)
 
-        #     if offset % 2 == 0:
-        #         offset += 1
-        #     else:
-        #         offset += 2
+        if end.y - start.y == 0:
+            for i in range(len(cells)-1):
+                for j in range(cells[i].y + 1, cells[i].y + 1 + ray_length):
+                    c = self.sampleCell(cells[i].x, j)
+                    if c != None and np.abs(c.raw_weight - self.config.max_step_height_up):
+                        return False
+                for j in range(cells[i].y - 1, cells[i].y - 1 - ray_length):
+                    c = self.sampleCell(cells[i].x, j)
+                    if c != None and np.abs(c.raw_weight - self.config.max_step_height_up):
+                        return False
+            return True
+        elif end.x - start.x == 0:
+            for i in range(len(cells)-1):
+                for j in range(cells[i].x + 1, cells[i].x + 1 + ray_length):
+                    c = self.sampleCell(j, cells[i].y)
+                    if c != None and np.abs(c.raw_weight - self.config.max_step_height_up):
+                        return False
+                for j in range(cells[i].x - 1, cells[i].x - 1 - ray_length):
+                    c = self.sampleCell(j, cells[i].y)
+                    if c != None and np.abs(c.raw_weight - self.config.max_step_height_up):
+                        return False
+            return True
             
-            #for i in range(cells):
+        slope = (end.y - start.y) / (end.x - start.x)
+        angle = np.arctan(-1/slope)
 
+
+        for i in range(len(cells) - 1):
+            line_points = []
+            x1 = np.round(cells[i].x + np.cos(angle) * ray_length)
+            y1 = np.round(cells[i].y + np.sin(angle) * ray_length)
+
+            x2 = np.round(cells[i].x - np.cos(angle) * ray_length)
+            y2 = np.round(cells[i].y - np.sin(angle) * ray_length)
+
+            line_points = []
+            dx = abs(x2 - x1)
+            dy = abs(y2 - y1)
+            x, y = x1, y1
+            sx = -1 if x1 > x2 else 1
+            sy = -1 if y1 > y2 else 1
+            if dx > dy:
+                err = dx / 2.0
+                while x != x2:
+                    line_points.append((x, y))
+                    err -= dy
+                    if err < 0:
+                        y += sy
+                        err += dx
+                    x += sx
+            else:
+                err = dy / 2.0
+                while y != y2:
+                    line_points.append((x, y))
+                    err -= dx
+                    if err < 0:
+                        x += sx
+                        err += dy
+                    y += sy
+            line_points.append((x, y))
+            
+            for j in range(len(line_points)-1):
+                c = self.sampleCell(line_points[i][0], line_points[i][1])
+                if c == None or np.abs(c.raw_weight - cells[i].raw_weight > self.config.max_step_height_up):
+                    return False
+            
+            return True
 
     def normalize_weight(self, score):
         return (255.0 - score) / 255.0
