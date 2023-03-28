@@ -14,6 +14,8 @@ class Map:
         self.obstacles = obstacles
         self.config = config
         self.cell_size = 0.075
+        self.min = 0
+        self.max = 0
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -81,6 +83,9 @@ class Map:
         if size % 2 != 0:
             end += 1
 
+        self.min = start
+        self.max = end - 1
+
         for x in range(start, end):
             for y in range(start, end):
                 self.addCell(x,y,0)
@@ -91,7 +96,10 @@ class Map:
         end = int(size/2)
         if size % 2 != 0:
             end += 1
-        
+
+        self.min = start
+        self.max = end - 1
+
         noise = Noise(seed)
         if seed != None:
             np.random.seed(seed)
@@ -117,6 +125,7 @@ class Map:
 
 
     # This function calculates the cost from point a to b. d is destination 
+
     def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 0):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
@@ -177,10 +186,14 @@ class Map:
     
     def safety_cost(self, cells_lengths, o):
         cells = []
+        variance_cell_vals = []
+
         for i in range(0, len(cells_lengths)):
-            cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))
+            temp_cell = self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])
+            cells.append(temp_cell)
+            variance_cell_vals.append(temp_cell.raw_weight)
         
-        #step safety is between 0 and 1, depending on how close the height is to the maximum step height.
+        # step safety is between 0 and 1, depending on how close the height is to the maximum step height.s
         step_safety = 0
 
         for i in range(len(cells) - 1):
@@ -200,8 +213,26 @@ class Map:
             turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
             turn_radius = abs(turn_radius) / 180
 
-        return (turn_radius + step_safety) /2
+        
+        # calculate variance based on cells that surround the cells along the path
+        for c in range(len(cells)):
+            for i in range(-1,2):
+                for j in range(-1,2):
+                    if(i != 0 and j != 0):
+                        temp_cell = self.sampleCell(cells[c].x + i, cells[c].y + j)
+                        #if((cells[c].x + i >= self.min) and (cells[c].x + i <= self.max) and (cells[c].y + j >= self.min) and (cells[c].y + j <= self.max)):
+                        if(temp_cell != None):
+                            if(temp_cell not in cells):
+                                cells.append(temp_cell)
+                                variance_cell_vals.append(temp_cell.raw_weight)
 
+        total_var = 10*np.var(variance_cell_vals)
+        
+        # print("----------------------------")
+        # print("step: " + str(step_safety))
+        # print("turn: " + str(turn_radius))
+        # print("var: " + str(total_var))
+        return (turn_radius + step_safety + total_var)/3
     
     def angle_between_points(self, a, b, c):
         ba = np.array(b) - np.array(a)
@@ -237,7 +268,6 @@ class Map:
 
         if check_clearence:
             clearence = self.check_clearence(cells)
-
         if max_step_up or max_step_down or max_incline or not clearence:
             return 10000
         
@@ -246,6 +276,22 @@ class Map:
     # TODO: IMPLEMENT THIS USING TRANSLATION AND SINGLE CALCULATION
     # either we can use a big rectanlge bounding box and check every square and its distance to the line, or we can use a rotated rectangle and check every box.
     def check_clearence(self, cells):
+        start = cells[0]
+        end = cells[len(cells)-1]
+        # slope = (end.y - start.y) / (end.x - start.x)
+        # inv_slope = -1/slope
+        for i in range(len(cells)-1):
+            get_intersect_cells([cells[i].x, cells[i].y], [end.x, end.y], plot = False)
+
+        # for j in range(-offset/2, offset/2):
+        #     offset = self.config.width / self.cell_size
+
+        #     if offset % 2 == 0:
+        #         offset += 1
+        #     else:
+        #         offset += 2
+            
+            #for i in range(cells):
         length = int((self.config.width / self.cell_size) / 2)
         if length == 0:
             length = 1
