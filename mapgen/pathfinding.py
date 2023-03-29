@@ -12,7 +12,6 @@ class Astar:
         closed = []
 
         opened.append(self.start_node)
-        print(opened)
         selected_node = self.start_node
         steps = 0
 
@@ -30,8 +29,6 @@ class Astar:
                     min_f = node.f
                     selected_node = node
 
-            print(selected_node)
-            print(opened)
             opened.remove(selected_node)
             closed.append(selected_node)
 
