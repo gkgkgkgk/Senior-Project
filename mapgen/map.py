@@ -35,7 +35,7 @@ class Map:
             cell.raw_weight = weight
             cell.normal = normal
         else:
-            cell = Cell(x, y, weight, normal)
+            cell = Cell(x, y, weight, normal=normal)
             self.cells.append(cell)
             self.cells_map[str(x)+","+str(y)] = cell
         
@@ -235,7 +235,8 @@ class Map:
         height_variance = 10*np.var(variance_cell_vals)
         
         # calculate variance of normals
-        norm_variance = np.sum(np.var(cell_norms, axis = 0))
+        norm_variance = np.sum(np.var(cell_norms, axis = 0)) if cell_norms else 0
+
 
         # print("----------------------------")
         # print("step: " + str(step_safety))
@@ -333,14 +334,14 @@ class Map:
 
 # TODO: implement normals, variance, etc.
 class Cell:
-    def __init__(self, x, y, weight):
+    def __init__(self, x, y, weight, normal = None):
         self.x = x
         self.y = y
         self.normalized_weight = weight
         self.raw_weight = weight
         self.max_height = 0
         self.min_height = 0
-        self.normal = None
+        self.normal = normal
     
     def __repr__(self):
         return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
