@@ -29,12 +29,13 @@ class Map:
         return None
     
     # A function to add a cell at a point. If te cell exists, it will overrride the cell.
-    def addCell(self, x, y, weight):
+    def addCell(self, x, y, weight, normal = None):
         cell = self.sampleCell(x, y)
         if cell != None:
             cell.raw_weight = weight
+            cell.normal = normal
         else:
-            cell = Cell(x, y, weight)
+            cell = Cell(x, y, weight, normal)
             self.cells.append(cell)
             self.cells_map[str(x)+","+str(y)] = cell
         
@@ -42,15 +43,17 @@ class Map:
     
     # A function to set cell values. If the cell doesn't exist, it will create it.
     # There is also an additive option, which allows the user to add to the weight instead of overriding it.
-    def setCell(self, x, y, weight, additive = False):
+    def setCell(self, x, y, weight, normal = None, additive = False):
         cell = self.sampleCell(x, y)
         if cell != None:
             if additive:
                 cell.raw_weight += weight
+                cell.normal = normal
             else:
                 cell.raw_weight = weight
+                cell.normal = normal
         else:
-            cell = Cell(x, y, weight)
+            cell = Cell(x, y, weight, normal)
             self.cells.append(cell)
             self.cells_map[str(x)+","+str(y)] = cell
         
@@ -187,12 +190,15 @@ class Map:
     def safety_cost(self, cells_lengths, o):
         cells = []
         variance_cell_vals = []
+        cell_norms = []
 
         for i in range(0, len(cells_lengths)):
             temp_cell = self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])
             cells.append(temp_cell)
             variance_cell_vals.append(temp_cell.raw_weight)
-        
+            if(temp_cell.normal != None):
+                cell_norms.append(temp_cell.normal)
+
         # step safety is between 0 and 1, depending on how close the height is to the maximum step height.s
         step_safety = 0
 
@@ -213,7 +219,7 @@ class Map:
             turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
             turn_radius = abs(turn_radius) / 180
 
-        
+        # TODO: MAKE FASTER WITH MATRIX DIALATION 
         # calculate variance based on cells that surround the cells along the path
         for c in range(len(cells)):
             for i in range(-1,2):
@@ -226,13 +232,16 @@ class Map:
                                 cells.append(temp_cell)
                                 variance_cell_vals.append(temp_cell.raw_weight)
 
-        total_var = 10*np.var(variance_cell_vals)
+        height_variance = 10*np.var(variance_cell_vals)
         
+        # calculate variance of normals
+        norm_variance = np.sum(np.var(cell_norms, axis = 0))
+
         # print("----------------------------")
         # print("step: " + str(step_safety))
         # print("turn: " + str(turn_radius))
         # print("var: " + str(total_var))
-        return (turn_radius + step_safety + total_var)/3
+        return (turn_radius + step_safety + height_variance + norm_variance)/4
     
     def angle_between_points(self, a, b, c):
         ba = np.array(b) - np.array(a)
@@ -331,6 +340,7 @@ class Cell:
         self.raw_weight = weight
         self.max_height = 0
         self.min_height = 0
+        self.normal = None
     
     def __repr__(self):
         return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
