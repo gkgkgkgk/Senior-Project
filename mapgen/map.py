@@ -35,7 +35,7 @@ class Map:
             cell.raw_weight = weight
             cell.normal = normal
         else:
-            cell = Cell(x, y, weight, normal=normal)
+            cell = Cell(x, y, weight, normal)
             self.cells.append(cell)
             self.cells_map[str(x)+","+str(y)] = cell
         
@@ -112,7 +112,8 @@ class Map:
                 if not (x == 0 and y == 0):
                     self.noise = noise.get_noise(x, y, freq, octaves=octaves)
                     weight = (self.noise)
-                    self.addCell(x, y, weight)
+                    normal = np.random.uniform(-1,1,3).tolist()
+                    self.addCell(x, y, weight, normal)
         
         if rocks:
             for _ in range(rockAmount):
@@ -129,7 +130,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
 
-    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 0):
+    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 1):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -241,7 +242,7 @@ class Map:
         # print("----------------------------")
         # print("step: " + str(step_safety))
         # print("turn: " + str(turn_radius))
-        # print("var: " + str(total_var))
+        print("var: " + str(norm_variance))
         return (turn_radius + step_safety + height_variance + norm_variance)/4
     
     def angle_between_points(self, a, b, c):
@@ -347,6 +348,7 @@ class Cell:
         return "{(" + str(self.x) + ", " + str(self.y) + "), " + str(self.raw_weight) + "}"
     def distance(self, node, cell_size):
         return np.sqrt(np.square(node.x - self.x) + (np.square(node.y - self.y))) * cell_size
+    
 class Obstacle:
     def __init__(self, x, y, cells=None):
         self.x = x

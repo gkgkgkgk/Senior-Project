@@ -22,8 +22,8 @@ config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
 config.user_init(20, 0.01, 1, 0.225)
 seed = 231
 my_map = Map(config=config)
-my_map.generate_blank_map(32)
-# my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
+# my_map.generate_blank_map(32)
+my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
 
 
 # weight = 0.47
@@ -104,8 +104,8 @@ my_map.generate_blank_map(32)
 #     for j in range(-14, -2):
 #         my_map.setCell(i, j, np.random.uniform() / 7.5, additive = True)
 
-my_map.setCell(2, 2, 1.0)
-my_map.setCell(-2, -2, 1.0)
+# my_map.setCell(2, 2, 1.0)
+# my_map.setCell(-2, -2, 1.0)
 
 my_map.normalize_weights()
 
