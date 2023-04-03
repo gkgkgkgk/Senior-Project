@@ -14,8 +14,10 @@ class Map:
         self.obstacles = obstacles
         self.config = config
         self.cell_size = 0.075
-        self.min = 0
-        self.max = 0
+        self.start_node = {}
+        self.end_node = {}
+        self.graph = {}
+
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -130,7 +132,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
 
-    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 1):
+    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 0):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -145,10 +147,15 @@ class Map:
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
 
+        print(cost_speed, heuristic_speed)
         return heuristic, cost + self.limitation_cost(cells, check_clearence = True)
 
     def speed_heuristic(self, a, b):
-        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
+        h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
+
+        # normalization around 1
+        h /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size / self.config.max_speed
+        return h
 
     def speed_cost(self, cells_lengths):
         # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
@@ -165,7 +172,12 @@ class Map:
             h = np.abs(cell1.raw_weight - cell2.raw_weight)
             l = cells_lengths[i][2]
             distance += np.sqrt(h ** 2 + l ** 2)
-        return distance / self.config.max_speed
+
+        step_n = np.sqrt(np.square(self.cell_size * self.graph.longest_edge) + np.square(self.graph.longest_edge * max(self.config.max_step_height_up,self.config.max_step_height_down)))
+        incline_n = (self.cell_size * np.sqrt(2))/np.cos(np.radians(max(self.config.max_incline_up,self.config.max_incline_down)))
+
+        return (distance/(max(step_n, incline_n))) / self.config.max_speed
+        return distance/ self.config.max_speed
 
     def energy_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit

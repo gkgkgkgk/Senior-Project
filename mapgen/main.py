@@ -18,7 +18,7 @@ pygame.display.flip()
 drawer = Drawer(screen)
 
 # max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit, energy_vs_incline
-config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
+config = RobotConfig(3, 0.3, 0.3, 30, 30, 500)
 config.user_init(20, 0.01, 1, 0.225)
 seed = 231
 my_map = Map(config=config)
@@ -108,11 +108,11 @@ my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=seed)
 # my_map.setCell(-2, -2, 1.0)
 
 my_map.normalize_weights()
-
 startTime = time.perf_counter()
 path_map = PRM(600, seed, my_map)
 path_map.generate_points(my_map, (-16,15), (15, -16))
 path_map.connect_nodes_knn(7)
+my_map.graph = path_map
 
 # path_map = Grid(1)
 # path_map.generate_points(my_map)
