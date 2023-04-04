@@ -1,90 +1,105 @@
 import React, { useRef, useEffect, useState } from "react";
-import Two from "two.js";
+import * as PIXI from "pixi.js";
 import tinycolor from "tinycolor2";
+import Hover from "./hover";
 
 const Display = (props) => {
     const domElement = useRef();
-    const [two, setTwo] = useState(null);
+    const [app, setApp] = useState(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [cellHover, setCellHover] = useState({});
 
     useEffect(setup, []);
-    renderCells(props.my_map);
 
     function setup() {
-        let newTwo = new Two({
+        let newApp = new PIXI.Application({
             height: 1024,
             width: 1024,
-            autostart: true,
-            type: Two.Types.canvas,
-        }).appendTo(domElement.current);
+            antialias: true,
+            backgroundColor: 0xafafaf
+        });
 
-        setTwo(newTwo);
+        setApp(newApp);
 
-        var background = newTwo.makeRectangle(newTwo.width / 2, newTwo.width / 2, newTwo.width, newTwo.height);
-        background.fill = "#afafaf";
+        const onMouseMove = (event) => {
+            // const { offsetX, offsetY } = event.data.global;
+            // setMousePos({ x: offsetX, y: offsetY });
+            // renderCells();
+        };
 
         return unmount;
 
         function unmount() {
-            newTwo.unbind("update");
-            newTwo.pause();
-            domElement.current.removeChild(newTwo.renderer.domElement);
+            // newApp.destroy();
+            // domElement.current.removeChild(newApp.view);
         }
-
     }
 
-    function renderCells(my_map) {
-        console.log("HERE")
+    useEffect(() => {
+        if (app && !app.view.parentNode) {
+            console.log("here!!!")
+            domElement.current.appendChild(app.view);
+        }
+    }, [app]);
+
+    useEffect(() => {
+        generateCells();
+    }, [props.my_map]);
+
+    function generateCells() {
+        let my_map = props.my_map;
         if (my_map == undefined || my_map.cells == undefined) {
             return;
         }
 
-        let min_x = Math.min(...my_map.cells.map(cell => cell.x));
-        let max_x = Math.max(...my_map.cells.map(cell => cell.x));
-        let min_y = Math.min(...my_map.cells.map(cell => cell.y));
-        let max_y = Math.max(...my_map.cells.map(cell => cell.y));
+        let min_x = Math.min(...my_map.cells.map((cell) => cell.x));
+        let max_x = Math.max(...my_map.cells.map((cell) => cell.x));
+        let min_y = Math.min(...my_map.cells.map((cell) => cell.y));
+        let max_y = Math.max(...my_map.cells.map((cell) => cell.y));
 
         let max_size = Math.max(Math.abs(min_x), Math.abs(min_y), max_x, max_y) + 1;
-        let cell_size = Math.floor(two.width / (max_size * 2));
+        let cell_size = Math.floor(app.screen.width / (max_size * 2));
 
-        let center = two.width / 2;
+        let center = app.screen.width / 2;
+        let newRects = [];
 
-        my_map.cells.forEach(cell => {
+        app.stage.removeChildren();
+        let newCells = {}
+        my_map.cells.forEach((cell) => {
             let x = center + cell.x * cell_size;
             let y = center - cell.y * cell_size;
-            var cellRect = two.makeRectangle(x, y, cell_size, cell_size);
-            cellRect.fill = weightToColor(cell.normalized_weight);
-            cellRect.linewidth = 0;
+            var cellRect = new PIXI.Graphics();
+            cellRect.beginFill(weightToColor(cell.normalized_weight));
+            cellRect.drawRect(0, 0, cell_size, cell_size);
+            cellRect.pivot.x = cell_size / 2;
+            cellRect.pivot.y = cell_size / 2;
+            cellRect.position.set(x, y)
 
-            cellRect.bind("mouseover", () => {
-                showPopup(cell, x, y);
-            });
-            cellRect.bind("mouseout", () => {
-                hidePopup();
-            });
+            cellRect.endFill();
+            cellRect.eventMode = "dynamic";
+
+            cellRect.pivot.x = cell_size / 2;
+            cellRect.pivot.y = cell_size / 2;
+
+            cellRect.on('mouseenter', (event) => {
+                setCellHover(cell);
+                setMousePos({ x: event.globalX, y: event.globalY });
+            })
+
+            cellRect.on('mouseleave', (event) => {
+                event.currentTarget.scale.set(1);
+            })
+
+            newRects.push(cellRect);
+            app.stage.addChild(cellRect);
+            newCells[x + "," + y] = cell
         });
     }
 
-    function showPopup(cell, x, y) {
-        console.log(cell);
-        // Create the popup element and position it next to the cell
-        const popup = document.createElement("div");
-        popup.innerHTML = `Cell (${cell.x}, ${cell.y})<br>Weight: ${cell.weight}`;
-        popup.style.position = "absolute";
-        popup.style.left = x + "px";
-        popup.style.top = y + "px";
-        popup.style.backgroundColor = "#ffffff";
-        popup.style.padding = "5px";
-        popup.style.border = "1px solid #000000";
-        // Add the popup element to the DOM
-        domElement.current.parentNode.appendChild(popup);
-    }
-
-    function hidePopup() {
-        // Remove the popup element from the DOM
-        const popup = domElement.current.parentNode.querySelector(".popup");
-        if (popup) {
-            domElement.current.parentNode.removeChild(popup);
-        }
+    const getCellOnHover = (event, cells, cell_size) => {
+        let x = (event.currentTarget.position.x - app.screen.width / 2) / cell_size;
+        let y = (event.currentTarget.position.y - app.screen.width / 2) / cell_size;
+        console.log(cells)
     }
 
     function weightToColor(weight) {
@@ -98,7 +113,7 @@ const Display = (props) => {
     }
 
 
-    return <div ref={domElement} />;
+    return <div ref={domElement}><Hover mousePos={mousePos} cellHover={cellHover}></Hover></div>;
 }
 
 export default Display;

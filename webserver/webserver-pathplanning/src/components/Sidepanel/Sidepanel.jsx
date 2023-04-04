@@ -5,7 +5,7 @@ function SidePanel(props) {
     const handleClick = () => {
         fetch('http://192.168.68.123:5000/get-map')
             .then(response => response.json())
-            .then(data => props.setMap(data));
+            .then(data => { props.setMap(data) });
     }
 
     return (

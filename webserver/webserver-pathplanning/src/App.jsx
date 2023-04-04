@@ -9,7 +9,7 @@ function App() {
   const [map, setMap] = useState(0)
   return (
     <div className="App">
-      <Canvas my_map={map}></Canvas>
+      <Canvas my_map={map} width={1024} height={1024}></Canvas>
       <SidePanel setMap={setMap}></SidePanel>
     </div>
   )

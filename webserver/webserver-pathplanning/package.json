@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@pixi/interaction": "^6.5.9",
     "cors": "^2.8.5",
+    "pixi.js": "^7.2.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tinycolor2": "^1.6.0",

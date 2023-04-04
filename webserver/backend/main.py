@@ -38,6 +38,7 @@ def getMap():
         'cells': celllist
     })
 
+
 @app.route('/')
 def index():
     path = example()
