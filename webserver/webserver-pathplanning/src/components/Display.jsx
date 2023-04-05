@@ -13,31 +13,24 @@ const Display = (props) => {
 
     function setup() {
         let newApp = new PIXI.Application({
-            height: 1024,
-            width: 1024,
+            height: 800,
+            width: 800,
             antialias: true,
             backgroundColor: 0xafafaf
         });
 
         setApp(newApp);
 
-        const onMouseMove = (event) => {
-            // const { offsetX, offsetY } = event.data.global;
-            // setMousePos({ x: offsetX, y: offsetY });
-            // renderCells();
-        };
-
         return unmount;
 
         function unmount() {
-            // newApp.destroy();
-            // domElement.current.removeChild(newApp.view);
+            if(newApp)
+                newApp.destroy();
         }
     }
 
     useEffect(() => {
         if (app && !app.view.parentNode) {
-            console.log("here!!!")
             domElement.current.appendChild(app.view);
         }
     }, [app]);
@@ -94,12 +87,6 @@ const Display = (props) => {
             app.stage.addChild(cellRect);
             newCells[x + "," + y] = cell
         });
-    }
-
-    const getCellOnHover = (event, cells, cell_size) => {
-        let x = (event.currentTarget.position.x - app.screen.width / 2) / cell_size;
-        let y = (event.currentTarget.position.y - app.screen.width / 2) / cell_size;
-        console.log(cells)
     }
 
     function weightToColor(weight) {
