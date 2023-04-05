@@ -3,15 +3,15 @@ import React, { useState } from 'react';
 function SidePanel(props) {
 
     const handleClickMap = () => {
-        fetch('http://192.168.68.156:5000/get-map')
+        fetch('http://192.168.68.155:5000/get-map')
             .then(response => response.json())
             .then(data => { props.setMap(data) });
     }
 
     const handleClickGraph = () => {
-        fetch('http://192.168.68.156:5000/get-prm?size=32')
+        fetch('http://192.168.68.155:5000/get-prm?size=600')
             .then(response => response.json())
-            .then(data => { console.log(data) });
+            .then(data => { props.setGraph(data) });
     }
 
     return (

@@ -8,6 +8,8 @@ const Display = (props) => {
     const [app, setApp] = useState(null);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [cellHover, setCellHover] = useState({});
+    const [center, setCenter] = useState(0);
+    const [cell_size, setCellSize] = useState(0);
 
     useEffect(setup, []);
 
@@ -20,7 +22,8 @@ const Display = (props) => {
         });
 
         setApp(newApp);
-
+        setCenter(newApp.screen.width / 2);
+        
         return unmount;
 
         function unmount() {
@@ -39,6 +42,10 @@ const Display = (props) => {
         generateCells();
     }, [props.my_map]);
 
+    useEffect(() => {
+        generateGraph();
+    }, [props.graph]);
+
     function generateCells() {
         let my_map = props.my_map;
         if (my_map == undefined || my_map.cells == undefined) {
@@ -52,8 +59,8 @@ const Display = (props) => {
 
         let max_size = Math.max(Math.abs(min_x), Math.abs(min_y), max_x, max_y) + 1;
         let cell_size = Math.floor(app.screen.width / (max_size * 2));
+        setCellSize(cell_size);
 
-        let center = app.screen.width / 2;
         let newRects = [];
 
         app.stage.removeChildren();
@@ -87,6 +94,32 @@ const Display = (props) => {
             app.stage.addChild(cellRect);
             newCells[x + "," + y] = cell
         });
+    }
+
+    function generateGraph(){
+        let graph = props.graph;
+        console.log(graph)
+        if(graph){
+        graph.nodes.forEach((node) => {
+            let nodeCircle  = new PIXI.Graphics();
+            nodeCircle.beginFill(0x00ff00);
+            nodeCircle.drawCircle(0, 0, 3);
+            nodeCircle.endFill();
+
+            let x = center + node.x * cell_size;
+            let y = center - node.y * cell_size;
+            nodeCircle.position.set(x, y)
+
+            node.edges.forEach((edge) => {
+                let nodeEdge = new PIXI.Graphics();
+                let x1 = center + edge.x * cell_size;
+                let y1 = center - edge.y * cell_size; 
+                nodeEdge.moveTo(x,y).lineStyle(1, 0x00ff00).lineTo(x1, y1);
+                app.stage.addChild(nodeEdge)
+            })
+            app.stage.addChild(nodeCircle);
+        })
+    }
     }
 
     function weightToColor(weight) {

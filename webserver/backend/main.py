@@ -7,6 +7,7 @@ from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
 from graphs import PRM, Grid
+from pathfinding import Astar
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -59,6 +60,19 @@ def getPRM():
         node = {'x': path_map.nodes[n].x, "y":path_map.nodes[n].y, "edges": edges}
         nodes.append(node)
     print(nodes)
+    return jsonify({
+        "nodes": nodes
+    })
+
+
+@app.route('/get-path')
+def getPath():    
+    args = request.args
+    nodes = []
+
+    astar = Astar(path_map.nodes['-16,15'], path_map.nodes['15,-16'])
+    astar.find_path(my_map)
+    
     return jsonify({
         "nodes": nodes
     })

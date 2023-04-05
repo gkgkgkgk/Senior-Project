@@ -7,10 +7,12 @@ import SidePanel from './components/Sidepanel/Sidepanel'
 
 function App() {
   const [map, setMap] = useState(0)
+  const [graph, setGraph] = useState(0)
+
   return (
     <div className="App">
-      <Canvas my_map={map} width={1024} height={1024}></Canvas>
-      <SidePanel setMap={setMap}></SidePanel>
+      <Canvas my_map={map} graph={graph} width={1024} height={1024}></Canvas>
+      <SidePanel setMap={setMap} setGraph={setGraph}></SidePanel>
     </div>
   )
 }
