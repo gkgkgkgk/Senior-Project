@@ -2,9 +2,9 @@ import numpy as np
 from cell_intersect import get_intersect_cells
 
 class PRM:
-    def __init__(self, n_points, seed, my_map):
+    def __init__(self, n_points, seed, my_map, nodes={}):
         self.n_points = n_points
-        self.nodes = {}
+        self.nodes = nodes
         self.my_map = my_map
         np.random.seed(seed)
 

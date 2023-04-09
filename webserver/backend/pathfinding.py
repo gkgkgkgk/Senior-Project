@@ -1,11 +1,14 @@
 import numpy as np
 
 class Astar:
-    def __init__(self, start_node, end_node):
+    def __init__(self, start_node, end_node, speed=0, safety=0, energy=0):
         self.start_node = start_node
         self.end_node = end_node
         self.path = []
         self.path_cost = 0
+        self.speed = speed
+        self.energy = energy
+        self.safety = safety
 
     def find_path(self, my_map):
         opened = []
@@ -57,7 +60,7 @@ class Astar:
                 if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
 
-                h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None)
+                h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None, speed_weight=self.speed, safety_weight=self.safety, energy_weight=self.energy)
 
                 temp_g = selected_node.g + g
                 

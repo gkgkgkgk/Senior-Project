@@ -14,11 +14,23 @@ function SidePanel(props) {
     const [endPos, setEndPos] = useState({x: 0, y: 0})
 
     const [speedPref, setSpeedPref] = useState(1)
-    const [energyPref, setEnergyPref] = useState(1)
-    const [safetyPref, setSafetyPref] = useState(1)
+    const [energyPref, setEnergyPref] = useState(0)
+    const [safetyPref, setSafetyPref] = useState(0)
+
+    const [mass, setMass] = useState(20)
+    const [width, setWidth] = useState(0.225)
+    const [maxSpeed, setMaxSpeed] = useState(3)
+    const [minEnergy, setMinEnergy] = useState(500)
+    const [stepUp, setStepUp] = useState(0.3)
+    const [stepDown, setStepDown] = useState(0.3)
+    const [inclineUp, setInclineUp] = useState(30)
+    const [inclineDown, setInclineDown] = useState(30)
+
+
 
 
     const handleClickMap = () => {
+        props.setGraph(0)
         let input_data = {
             mapSize,
             cellSize,
@@ -44,14 +56,44 @@ function SidePanel(props) {
             cells: props.my_map.cells
         };
 
-        console.log(input_data);
-
         fetch('http://127.0.0.1:5000/get-prm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }, body: JSON.stringify(input_data)
         }).then(response => response.json()).then(data => { console.log(data); props.setGraph(data)});
+    }
+
+    const handleClickPath = () => {
+        let input_data = {
+            cells: props.my_map.cells,
+            nodes: props.my_graph.nodes,
+            startPos,
+            endPos,
+            speedPref,
+            safetyPref, 
+            energyPref,
+            graphSeed,
+            config: {
+                mass, 
+                width,
+                maxSpeed,
+                minEnergy,
+                stepUp,
+                stepDown,
+                inclineUp,
+                inclineDown
+            }
+        };
+
+        console.log(input_data)
+
+        fetch('http://127.0.0.1:5000/get-path', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify(input_data)
+        }).then(response => response.json()).then(data => { console.log(data); props.addPath(data)});
     }
 
     return (
@@ -132,39 +174,39 @@ function SidePanel(props) {
             <div className='myform'>
                 <div className="form-item">
                     <label for="mass">Mass:</label>
-                    <input type="number" id="mass" name="mass" min="0.0" max="100" />
+                    <input type="number" id="mass" name="mass" min="0.0" max="100" defaultValue={20} onChange={e => setMass(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="width">Width:</label>
-                    <input type="number" id="width" name="width" min="0.0" max="100" />
+                    <input type="number" id="width" name="width" min="0.0" max="100" defaultValue={0.225} onChange={e => setWidth(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="max_speed">Max Speed:</label>
-                    <input type="number" id="max_speed" name="max_speed" min="0.0" max="100" />
+                    <input type="number" id="max_speed" name="max_speed" min="0.0" max="100" defaultValue={3} onChange={e => setMaxSpeed(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="energy">Min Energy:</label>
-                    <input type="number" id="energy" name="energy" min="0.0" max="100" />
+                    <input type="number" id="energy" name="energy" min="0.0" max="100" defaultValue={500} onChange={e => setMinEnergy(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="step_up">Step ⬆:</label>
-                    <input type="number" id="step_up" name="step_up" min="0.0" max="100" />
+                    <input type="number" id="step_up" name="step_up" min="0.0" max="100" defaultValue={0.3} onChange={e => setStepUp(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="step_down">Step ⬇:</label>
-                    <input type="number" id="step_down" name="step_down" min="0.0" max="100" />
+                    <input type="number" id="step_down" name="step_down" min="0.0" max="100" defaultValue={0.3} onChange={e => setStepDown(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="incline_up">Incline ⬆:</label>
-                    <input type="number" id="incline_up" name="incline_up" min="0.0" max="100" />
+                    <input type="number" id="incline_up" name="incline_up" min="0.0" max="100" defaultValue={30} onChange={e => setInclineUp(parseFloat(e.target.value))}/>
                 </div>
                 <div className="form-item">
                     <label for="incline_down">Incline ⬇:</label>
-                    <input type="number" id="incline_down" name="incline_down" min="0.0" max="100" />
+                    <input type="number" id="incline_down" name="incline_down" min="0.0" max="100" defaultValue={30} onChange={e => setInclineDown(parseFloat(e.target.value))}/>
                 </div>
             </div>
 
-            <button className="load-button">Get Path</button>
+            <button className={"load-button " + (props.my_graph? "" : "disabled-button")} onClick={handleClickPath}>Get Path</button>
             <hr></hr>
             <h2>Testing</h2>
             <div className='myform'>
