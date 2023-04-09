@@ -13,6 +13,10 @@ function SidePanel(props) {
     const [startPos, setStartPos] = useState({x: 0, y: 0})
     const [endPos, setEndPos] = useState({x: 0, y: 0})
 
+    const [speedPref, setSpeedPref] = useState(1)
+    const [energyPref, setEnergyPref] = useState(1)
+    const [safetyPref, setSafetyPref] = useState(1)
+
 
     const handleClickMap = () => {
         let input_data = {
@@ -109,17 +113,17 @@ function SidePanel(props) {
             <div className='myform'>
                 <div className="form-item">
                     <label for="speed_pref">Speed Weight:</label>
-                    <input type="number" id="speed_pref" name="speed_pref" min="0.0" max="100" step={10} />
+                    <input type="number" id="speed_pref" name="speed_pref" min="0.0" max="100" step={10} defaultValue={1} onChange={e => setSpeedPref(parseFloat(e.target.value))}/>
                 </div>
 
                 <div className="form-item">
                     <label for="energy_pref">Energy Weight:</label>
-                    <input type="number" id="energy_pref" name="energy_pref" min="0.0" max="100" step={10} />
+                    <input type="number" id="energy_pref" name="energy_pref" min="0.0" max="100" step={10} defaultValue={0} onChange={e => setEnergyPref(parseFloat(e.target.value))}/>
                 </div>
 
                 <div className="form-item">
                     <label for="safety_pref">Safety Weight:</label>
-                    <input type="number" id="safety_pref" name="safety_pref" min="0.0" max="100" step={10} />
+                    <input type="number" id="safety_pref" name="safety_pref" min="0.0" max="100" step={10} defaultValue={0} onChange={e => setSafetyPref(parseFloat(e.target.value))}/>
                 </div>
 
             </div>
