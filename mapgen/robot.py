@@ -6,7 +6,6 @@ class RobotConfig:
         self.gravity = gravity
         self.friction = friction
         self.wheel_diameter = wheel_diameter
-        self.gravity = gravity
         self.width = width
 
     def __init__(self, max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit):

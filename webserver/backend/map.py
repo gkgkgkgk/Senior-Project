@@ -129,7 +129,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
 
-    def calculate_cost(self, a, b, d, o, speed_weight = 1, energy_weight = 0, safety_weight = 1):
+    def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)

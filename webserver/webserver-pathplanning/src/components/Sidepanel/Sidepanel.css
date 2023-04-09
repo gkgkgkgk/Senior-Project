@@ -1,0 +1,21 @@
+.sidepanel {
+    background-color: grey;
+    padding: 10px;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.myform {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.form-item {
+    margin: 10px;
+}
+
+label {
+    margin-right: 5px;
+}

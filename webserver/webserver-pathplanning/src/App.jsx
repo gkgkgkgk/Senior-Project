@@ -11,7 +11,9 @@ function App() {
 
   return (
     <div className="App">
+      <div className="display">
       <Canvas my_map={map} graph={graph} width={1024} height={1024}></Canvas>
+      </div>
       <SidePanel setMap={setMap} setGraph={setGraph}></SidePanel>
     </div>
   )

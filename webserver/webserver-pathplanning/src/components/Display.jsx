@@ -133,7 +133,7 @@ const Display = (props) => {
     }
 
 
-    return <div ref={domElement}><Hover mousePos={mousePos} cellHover={cellHover}></Hover></div>;
+    return <div style={{margin: "50px"}} ref={domElement}><Hover mousePos={mousePos} cellHover={cellHover}></Hover></div>;
 }
 
 export default Display;
