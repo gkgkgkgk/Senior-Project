@@ -7,8 +7,13 @@ import time
 class Map:
     # Every map is initiated with a point (0,0) which is where the robot starts (the LiDAR begins at the center of the map).
     def __init__(self, cells=[], obstacles=[], config=[]):
-        self.cells = cells
+        self.cells = []
         self.cells_map = {}
+
+        for cell in cells:
+            self.addCell(cell['x'], cell['y'], cell['raw_weight'])
+
+
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
@@ -94,6 +99,9 @@ class Map:
 
     # This function uses a noise function to generate a random map.
     def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
+        self.cells = []
+        self.cells_map = {}
+
         start = int(-size/2)
         end = int(size/2)
         if size % 2 != 0:
@@ -114,6 +122,8 @@ class Map:
                     normal = np.random.uniform(-1,1,3).tolist()
                     self.addCell(x, y, weight, normal)
         
+        self.addCell(0, 0, 0, [0])
+
         if rocks:
             for _ in range(rockAmount):
                 x = int(np.random.uniform(-size/2, size/2))

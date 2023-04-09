@@ -97,9 +97,11 @@ const Display = (props) => {
     }
 
     function generateGraph(){
+        generateCells();
         let graph = props.graph;
-        console.log(graph)
+
         if(graph){
+        let newGraphContainer = new PIXI.Container();
         graph.nodes.forEach((node) => {
             let nodeCircle  = new PIXI.Graphics();
             nodeCircle.beginFill(0x00ff00);
@@ -117,8 +119,9 @@ const Display = (props) => {
                 nodeEdge.moveTo(x,y).lineStyle(1, 0x00ff00).lineTo(x1, y1);
                 app.stage.addChild(nodeEdge)
             })
-            app.stage.addChild(nodeCircle);
+            newGraphContainer.addChild(nodeCircle);
         })
+        app.stage.addChild(newGraphContainer);
     }
     }
 

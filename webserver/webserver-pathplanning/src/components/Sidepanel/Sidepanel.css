@@ -1,9 +1,10 @@
 .sidepanel {
-    background-color: grey;
+    background-color: rgb(82, 82, 82);
     padding: 10px;
     max-width: 500px;
     display: flex;
     flex-direction: column;
+    overflow-y:auto;
 }
 
 .myform {
@@ -18,4 +19,9 @@
 
 label {
     margin-right: 5px;
+}
+
+hr {
+    width: 90%;
+    margin-top: 20px;
 }
