@@ -18,7 +18,7 @@ const Display = (props) => {
             height: 800,
             width: 800,
             antialias: true,
-            backgroundColor: 0xafafaf
+            backgroundAlpha: 0
         });
 
         setApp(newApp);

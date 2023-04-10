@@ -26,6 +26,12 @@ function SidePanel(props) {
     const [inclineUp, setInclineUp] = useState(30)
     const [inclineDown, setInclineDown] = useState(30)
 
+    const [trialCount, setTrialCount] = useState(100)
+    const [randomizeMap, setRandomizeMap] = useState(false)
+    const [randomizeRobot, setRandomizeRobot] = useState(false)
+    const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(true)
+    const [randomizePositions, setRandomizePositions] = useState(false)
+    const [runAstar, setRunAstar] = useState(false)
 
 
 
@@ -97,6 +103,44 @@ function SidePanel(props) {
                 'Content-Type': 'application/json'
             }, body: JSON.stringify(input_data)
         }).then(response => response.json()).then(data => { console.log(data); props.addPath(data)});
+    }
+
+    const handleClickTests = () => {
+        let input_data = {
+            cells: props.my_map.cells,
+            nodes: props.my_graph.nodes,
+            startPos,
+            endPos,
+            speedPref,
+            safetyPref, 
+            energyPref,
+            graphSeed,
+            config: {
+                mass, 
+                width,
+                maxSpeed,
+                minEnergy,
+                stepUp,
+                stepDown,
+                inclineUp,
+                inclineDown
+            },
+            test: {
+                trialCount,
+                randomizeMap,
+                randomizePositions,
+                randomizeRobot,
+                randomizeUserPrefs,
+                runAstar
+            }
+        };
+
+        fetch('http://127.0.0.1:5000/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify(input_data)
+        }).then(response => response.json()).then(data => { console.log(data);});
     }
 
     return (
@@ -215,41 +259,41 @@ function SidePanel(props) {
             <div className='myform'>
                 <div className="form-item">
                     <label for="test_count">Trial Count:</label>
-                    <input type="number" id="test_count" name="test_count" min="0" max="1000" />
+                    <input type="number" id="test_count" name="test_count" min="0" max="1000" defaultValue={100} onChange={e => setTrialCount(parseInt(e.target.value))} />
                 </div>
 
                 <div className="form-item">
                     <label for="r_map">Randomize Map</label>
-                    <input type="checkbox" id="r_map" name="r_map" />
+                    <input type="checkbox" id="r_map" name="r_map" onChange={e => setRandomizeMap(!randomizeMap)}/>
                 </div>
 
                 <div className="form-item">
                     <label for="r_robot">Randomize Robot</label>
-                    <input type="checkbox" id="r_robot" name="r_robot" />
+                    <input type="checkbox" id="r_robot" name="r_robot" onChange={e => setRandomizeRobot(!randomizeRobot)}/>
                 </div>
 
                 <div className="form-item">
                     <label for="r_user">Randomize User Prefs</label>
-                    <input type="checkbox" id="r_user" name="r_user" />
+                    <input type="checkbox" id="r_user" name="r_user" checked onChange={e => setRandomizeUserPrefs(!randomizeUserPrefs)}/>
                 </div>
 
                 <div className="form-item">
                     <label for="r_pos">Randomize Start/End Positions</label>
-                    <input type="checkbox" id="r_pos" name="r_pos" />
+                    <input type="checkbox" id="r_pos" name="r_pos" onChange={e => setRandomizePositions(!randomizePositions)}/>
                 </div>
 
                 <div className="form-item">
                     <label for="r_astar">Run Plain ASTAR</label>
-                    <input type="checkbox" id="r_astar" name="r_astar" />
+                    <input type="checkbox" id="r_astar" name="r_astar" onChange={e => setRunAstar(!runAstar)}/>
                 </div>
             </div>
-            <button className="load-button">Run Tests</button>
+            <button className={"load-button " + (props.my_graph? "" : "disabled-button")} onClick={handleClickTests}>Run Tests</button>
 
             <hr></hr>
             <h2>Options</h2>
             <div className='myform'>
                 <div className="form-item">
-                    <label for="save_path">Save Paths</label>
+                    <label for="save_path">Override Paths</label>
                     <input type="checkbox" id="save_path" name="save_path" />
                 </div>
             </div>

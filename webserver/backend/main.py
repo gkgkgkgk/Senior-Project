@@ -97,13 +97,46 @@ def getPath():
         "path": path
     })
 
-# @app.route('/')
-# def index():
-#     path = example()
-#     pathlist = []
-#     for node in path:
-#         pathlist.append((node.x, node.y))
-#     return json.dumps(pathlist)
+
+@app.route('/test', methods=['POST'])
+def runTest():    
+    json_data = request.get_json()
+    trials = json_data["trialCount"]
+
+    # config = RobotConfig(json_data['config']['maxSpeed'], json_data['config']['stepUp'], json_data['config']['stepDown'], json_data['config']['inclineUp'], json_data['config']['inclineDown'], json_data['config']['minEnergy'])
+    # config.user_init(json_data['config']['mass'], 0.01, 1, json_data['config']['width'])
+
+    # cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
+    # mm = Map(cells=cells, config=config)
+
+    # nodes = {}
+    # for n in json_data['nodes']:
+    #     nodes[str(n['x']) + "," + str(n['y'])] = Node(n['x'], n['y'])
+
+    # for n in json_data['nodes']:
+    #     edges = []
+    #     for edge in n['edges']:
+    #         edges.append(nodes[str(edge['x'])+","+str(edge['y'])])
+        
+    #     nodes[str(n['x']) + "," + str(n['y'])].edges = edges
+
+    # path_map = PRM(len(nodes), json_data['graphSeed'], mm, nodes=nodes)
+
+    # startPos = path_map.nodes[str(json_data['startPos']['x']) + "," + str(json_data['startPos']['y'])]
+    # endPos = path_map.nodes[str(json_data['endPos']['x']) + "," + str(json_data['endPos']['y'])]
+
+    # astar = Astar(startPos, endPos, speed = json_data['speedPref'], energy = json_data['energyPref'], safety = json_data['safetyPref'])
+    # astar.find_path(mm)
+    
+    # path = []
+    # for node in astar.path:
+    #     path.append({'x': node.x, 'y': node.y})
+
+    return jsonify({
+        "path": "hi"
+    })
+
+
 
 
 if __name__ == '__main__':
