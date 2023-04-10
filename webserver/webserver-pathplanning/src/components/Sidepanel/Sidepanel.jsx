@@ -10,8 +10,8 @@ function SidePanel(props) {
     const [prmSize, setPrmSize] = useState(500)
     const [knnSize, setKnnSize] = useState(5)
     const [graphSeed, setGraphSeed] = useState(123)
-    const [startPos, setStartPos] = useState({x: 0, y: 0})
-    const [endPos, setEndPos] = useState({x: 0, y: 0})
+    const [startPos, setStartPos] = useState({x: -16, y: 15})
+    const [endPos, setEndPos] = useState({x: 15, y: -16})
 
     const [speedPref, setSpeedPref] = useState(1)
     const [energyPref, setEnergyPref] = useState(0)
@@ -31,6 +31,7 @@ function SidePanel(props) {
 
     const handleClickMap = () => {
         props.setGraph(0)
+        props.setPaths([])
         let input_data = {
             mapSize,
             cellSize,
@@ -47,6 +48,8 @@ function SidePanel(props) {
     }
 
     const handleClickGraph = () => {
+        props.setPaths([])
+
         let input_data = {
             prmSize,
             knnSize,
@@ -141,11 +144,11 @@ function SidePanel(props) {
                 </div>
                 <div className="form-item">
                     <label for="start_pos">Start Pos (x, y):</label>
-                    <input id="start_pos" name="start_pos" defaultValue={'0,0'} onChange={e => setStartPos({x: parseInt(e.target.value.split(',')[0]), y: parseInt(e.target.value.split(',')[1])})}/>
+                    <input id="start_pos" name="start_pos" defaultValue={'-16,15'} onChange={e => setStartPos({x: parseInt(e.target.value.split(',')[0]), y: parseInt(e.target.value.split(',')[1])})}/>
                 </div>
                 <div className="form-item">
                     <label for="end_pos">End Pos (x, y):</label>
-                    <input id="end_pos" name="end_pos" defaultValue={'0,0'} onChange={e => setEndPos({x: parseInt(e.target.value.split(',')[0]), y: parseInt(e.target.value.split(',')[1])})}/>
+                    <input id="end_pos" name="end_pos" defaultValue={'15,-16'} onChange={e => setEndPos({x: parseInt(e.target.value.split(',')[0]), y: parseInt(e.target.value.split(',')[1])})}/>
                 </div>
             </div>
             <button className={"load-button " + (props.my_map? "" : "disabled-button")} onClick={handleClickGraph}>Load Graph</button>

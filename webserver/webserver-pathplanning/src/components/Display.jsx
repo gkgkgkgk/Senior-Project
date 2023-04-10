@@ -130,31 +130,39 @@ const Display = (props) => {
     }
 
     function generatePaths(){
-    //     let paths = props.paths;
-        
-    //     if(graph){
-    //     let newGraphContainer = new PIXI.Container();
-    //     graph.nodes.forEach((node) => {
-    //         let nodeCircle  = new PIXI.Graphics();
-    //         nodeCircle.beginFill(0x00ff00);
-    //         nodeCircle.drawCircle(0, 0, 3);
-    //         nodeCircle.endFill();
+        let paths = props.paths;
 
-    //         let x = center + node.x * cell_size;
-    //         let y = center - node.y * cell_size;
-    //         nodeCircle.position.set(x, y)
+        if(paths && paths.length > 0){
+            let pathsContainer = new PIXI.Container();
+            paths.forEach((path, pathIndex) => {
+                let nodeContainer = new PIXI.Container();
 
-    //         node.edges.forEach((edge) => {
-    //             let nodeEdge = new PIXI.Graphics();
-    //             let x1 = center + edge.x * cell_size;
-    //             let y1 = center - edge.y * cell_size; 
-    //             nodeEdge.moveTo(x,y).lineStyle(1, 0x00ff00).lineTo(x1, y1);
-    //             app.stage.addChild(nodeEdge)
-    //         })
-    //         newGraphContainer.addChild(nodeCircle);
-    //     })
-    //     app.stage.addChild(newGraphContainer);
-    // }
+                path.path.forEach((node, index) =>{
+                    let nodeCircle = new PIXI.Graphics();
+                    nodeCircle.beginFill(props.pathColors[pathIndex]);
+                    nodeCircle.drawCircle(0,0,4);
+                    nodeCircle.endFill();
+
+                    let x = center + node.x * cell_size;
+                    let y = center - node.y * cell_size;
+                    nodeCircle.position.set(x, y)
+                    nodeContainer.addChild(nodeCircle)
+
+                    if(index > 0){
+                        let previousNode = path.path[index-1];
+                        let nodeEdge = new PIXI.Graphics();
+                        let x1 = center + previousNode.x * cell_size;
+                        let y1 = center - previousNode.y * cell_size; 
+                        nodeEdge.moveTo(x,y).lineStyle(4, props.pathColors[pathIndex]).lineTo(x1, y1);
+                        nodeContainer.addChild(nodeEdge)
+                    }
+                })
+
+                pathsContainer.addChild(nodeContainer);
+            })
+
+            app.stage.addChild(pathsContainer);
+        }
     }
 
     function weightToColor(weight) {
