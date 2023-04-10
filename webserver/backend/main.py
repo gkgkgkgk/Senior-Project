@@ -39,11 +39,11 @@ def getPRM():
     cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
 
     mm = Map(cells=cells)
-    print(len(mm.cells))
-    path_map = PRM(json_data['prmSize'], json_data['graphSeed'], mm)
+
+    path_map = PRM(json_data['prmSize'], json_data['graphSeed'], mm, nodes={})
 
     path_map.generate_points(mm, (json_data['startPos']['x'], json_data['startPos']['y']), (json_data['endPos']['x'], json_data['endPos']['y']))
-    print(path_map.nodes)
+
     path_map.connect_nodes_knn(json_data['knnSize'])
     nodes = []
     for n in path_map.nodes:
@@ -54,7 +54,7 @@ def getPRM():
 
         node = {'x': path_map.nodes[n].x, "y":path_map.nodes[n].y, "edges": edges}
         nodes.append(node)
-    print(nodes)
+
     return jsonify({
         "nodes": nodes
     })
