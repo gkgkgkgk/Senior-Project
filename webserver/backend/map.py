@@ -157,7 +157,11 @@ class Map:
         return heuristic, cost + self.limitation_cost(cells, check_clearence = True)
 
     def speed_heuristic(self, a, b):
-        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
+        h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
+
+        # normalization around 1
+        h /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size / self.config.max_speed
+        return h
 
     def speed_cost(self, cells_lengths):
         # using the distance per cell and the speed per incline, calculate the total time to traverse this path.
@@ -174,10 +178,19 @@ class Map:
             h = np.abs(cell1.raw_weight - cell2.raw_weight)
             l = cells_lengths[i][2]
             distance += np.sqrt(h ** 2 + l ** 2)
-        return distance / self.config.max_speed
+
+        # step_n = np.sqrt(np.square(self.cell_size * self.graph.longest_edge) + np.square(self.graph.longest_edge * max(self.config.max_step_height_up,self.config.max_step_height_down)))
+        # incline_n = (self.cell_size * np.sqrt(2))/np.cos(np.radians(max(self.config.max_incline_up,self.config.max_incline_down)))
+        # return (distance/(max(step_n, incline_n))) / self.config.max_speed
+
+        return (distance/(np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size)) / self.config.max_speed
 
     def energy_heuristic(self, a, b):
-        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
+        e = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
+
+        # normalization around 1
+        e /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
+        return e
 
     # using the distance per cell and the incline to determine the energy expended by the robot
     def energy_cost(self, cells_lengths):
@@ -192,7 +205,13 @@ class Map:
             energy = self.cell_size * self.config.min_energy_per_unit + self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size))
             energies.append(energy)
 
-        return np.sum(energies)
+        # I think this part is wrong.
+        # step_n = self.cell_size * self.config.min_energy_per_unit * self.graph.longest_edge + self.config.energy_vs_incline(max(self.config.max_step_height_up,self.config.max_step_height_down), self.graph.longest_edge)
+        # incline_n = self.cell_size * self.config.min_energy_per_unit * self.graph.longest_edge + self.config.energy_vs_incline(self.graph.longest_edge * max(np.tan(np.radians(self.config.max_incline_up)),np.tan(np.radians(self.config.max_incline_down))), self.graph.longest_edge)
+        # # return np.sum(energies) / max(step_n, incline_n)
+        d = np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
+
+        return np.sum(energies) / d
     
     def safety_heuristic(self, a, b):
         return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size
@@ -293,20 +312,10 @@ class Map:
     def check_clearence(self, cells):
         start = cells[0]
         end = cells[len(cells)-1]
-        # slope = (end.y - start.y) / (end.x - start.x)
-        # inv_slope = -1/slope
+
         for i in range(len(cells)-1):
             get_intersect_cells([cells[i].x, cells[i].y], [end.x, end.y], plot = False)
 
-        # for j in range(-offset/2, offset/2):
-        #     offset = self.config.width / self.cell_size
-
-        #     if offset % 2 == 0:
-        #         offset += 1
-        #     else:
-        #         offset += 2
-            
-            #for i in range(cells):
         length = int((self.config.width / self.cell_size) / 2)
         if length == 0:
             length = 1
@@ -317,20 +326,6 @@ class Map:
                     c = self.sampleCell(x, y)
                     if c != None and np.abs(c.raw_weight - cell.raw_weight) > self.config.max_step_height_up:
                         return False
-        # for cell in cells:
-        #     x1 = cell.x - length
-        #     x2 = cell.x + length
-
-        #     y1 = cell.y - length
-        #     y2 = cell.y + length
-
-
-        #     for x in range(x1, x2 + 1):
-        #         for y in range(y1, y2 + 1):
-        #             c = self.sampleCell(x, y)
-        #             if c != None and c.distance(cell, self.cell_size) < (self.config.width / 2) and np.abs(c.raw_weight - cell.raw_weight) > self.config.max_step_height_up:
-        #                 return False
-
         return True
 
     def normalize_weight(self, score):

@@ -11,6 +11,9 @@ class Astar:
         self.safety = safety
 
     def find_path(self, my_map):
+        my_map.start_node = self.start_node
+        my_map.end_node = self.end_node
+
         opened = []
         closed = []
 
