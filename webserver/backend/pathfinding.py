@@ -9,6 +9,7 @@ class Astar:
         self.speed = speed
         self.energy = energy
         self.safety = safety
+        self.path_costs = {}
 
     def find_path(self, my_map):
         my_map.start_node = self.start_node

@@ -139,7 +139,7 @@ class Map:
 
     # This function calculates the cost from point a to b. d is destination 
 
-    def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1):
+    def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1, cost_array=False):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed = self.speed_cost(cells)
@@ -153,8 +153,18 @@ class Map:
 
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
+        limit_cost = self.limitation_cost(cells, check_clearence = True)
 
-        return heuristic, cost + self.limitation_cost(cells, check_clearence = True)
+        if not cost_array:
+            return heuristic, cost + limit_cost
+
+        cost_array = {}
+        cost_array['speed'] = cost_speed
+        cost_array['energy'] = cost_energy
+        cost_array['safety'] = cost_safety
+        cost_array['limitation'] = limit_cost
+
+        return cost_array
 
     def speed_heuristic(self, a, b):
         h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
