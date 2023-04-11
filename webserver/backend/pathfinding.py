@@ -10,6 +10,10 @@ class Astar:
         self.energy = energy
         self.safety = safety
         self.path_costs = {}
+        self.path_costs["speed"] = 0
+        self.path_costs["energy"] = 0
+        self.path_costs["safety"] = 0
+        self.path_costs["limit"] = 0
 
     def find_path(self, my_map):
         my_map.start_node = self.start_node
@@ -52,10 +56,15 @@ class Astar:
                 # pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
                 self.path = path
                 self.path_cost = totalCost
-                # print(path)
-                # for node in path:
-                #     print(node, node.g)
-                return path
+                
+                for i in range(len(path)-1):
+                    cost_array = my_map.calculate_cost(path[i], path[i+1], self.end_node, path[i].parent if path[i].parent != 0 else None, cost_array=True)
+                    self.path_costs["speed"] += cost_array["speed"]
+                    self.path_costs["energy"] += cost_array["energy"]
+                    self.path_costs["safety"] += cost_array["safety"]
+                    self.path_costs["limit"] += cost_array["limit"]
+
+                return path, self.path_costs
             
             children = selected_node.edges
 

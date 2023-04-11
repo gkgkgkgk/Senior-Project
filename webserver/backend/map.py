@@ -2,6 +2,7 @@ import numpy as np
 from noise import Noise
 from cell_intersect import get_intersect_cells
 import time
+import math
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
 # Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
@@ -162,7 +163,7 @@ class Map:
         cost_array['speed'] = cost_speed
         cost_array['energy'] = cost_energy
         cost_array['safety'] = cost_safety
-        cost_array['limitation'] = limit_cost
+        cost_array['limit'] = limit_cost
 
         return cost_array
 
@@ -256,7 +257,7 @@ class Map:
         turn_radius = 0
         if o != None:
             turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
-            turn_radius = abs(turn_radius) / 180
+            turn_radius = 1-math.exp(-turn_radius/30)
 
         # TODO: MAKE FASTER WITH MATRIX DIALATION 
         # calculate variance based on cells that surround the cells along the path
