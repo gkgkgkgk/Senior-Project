@@ -168,10 +168,10 @@ class Map:
         return cost_array
 
     def speed_heuristic(self, a, b):
-        h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size / self.config.max_speed
+        h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
 
         # normalization around 1
-        h /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size / self.config.max_speed
+        h /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2)
         return h
 
     def speed_cost(self, cells_lengths):
@@ -194,7 +194,7 @@ class Map:
         # incline_n = (self.cell_size * np.sqrt(2))/np.cos(np.radians(max(self.config.max_incline_up,self.config.max_incline_down)))
         # return (distance/(max(step_n, incline_n))) / self.config.max_speed
 
-        return (distance/(np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size)) / self.config.max_speed
+        return distance/(np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2))
 
     def energy_heuristic(self, a, b):
         e = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit

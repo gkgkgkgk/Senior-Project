@@ -22,9 +22,9 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 def getMap():
     json_data = request.get_json()
 
-    mm = Map()
+    mm = Map(cell_size=json_data["cellSize"])
 
-    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], cell_size=json_data["cellSize"])
+    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'])
     mm.normalize_weights()
 
     celllist = [{'x': cell.x, 'y': cell.y, 'raw_weight': cell.raw_weight, 'normalized_weight': cell.normalized_weight} for cell in mm.cells]
