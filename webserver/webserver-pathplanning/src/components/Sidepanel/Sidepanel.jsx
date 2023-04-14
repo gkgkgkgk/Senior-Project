@@ -58,6 +58,7 @@ function SidePanel(props) {
 
         let input_data = {
             prmSize,
+            cellSize,
             knnSize,
             graphSeed,
             startPos,
@@ -77,6 +78,7 @@ function SidePanel(props) {
         let input_data = {
             cells: props.my_map.cells,
             nodes: props.my_graph.nodes,
+            cellSize,
             startPos,
             endPos,
             speedPref,
@@ -109,6 +111,7 @@ function SidePanel(props) {
         let input_data = {
             cells: props.my_map.cells,
             nodes: props.my_graph.nodes,
+            cellSize,
             startPos,
             endPos,
             speedPref,

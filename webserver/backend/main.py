@@ -24,7 +24,7 @@ def getMap():
 
     mm = Map()
 
-    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'])
+    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], cell_size=json_data["cellSize"])
     mm.normalize_weights()
 
     celllist = [{'x': cell.x, 'y': cell.y, 'raw_weight': cell.raw_weight, 'normalized_weight': cell.normalized_weight} for cell in mm.cells]
@@ -39,7 +39,7 @@ def getPRM():
     json_data = request.get_json()
     cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
 
-    mm = Map(cells=cells)
+    mm = Map(cells=cells, cell_size=json_data["cellSize"])
 
     path_map = PRM(json_data['prmSize'], json_data['graphSeed'], mm, nodes={})
 
@@ -69,7 +69,7 @@ def getPath():
     config.user_init(json_data['config']['mass'], 0.01, 1, json_data['config']['width'])
 
     cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
-    mm = Map(cells=cells, config=config)
+    mm = Map(cells=cells, config=config, cell_size=json_data["cellSize"])
 
     nodes = {}
     for n in json_data['nodes']:
@@ -109,7 +109,7 @@ def runTest():
     config.user_init(json_data['config']['mass'], 0.01, 1, json_data['config']['width'])
 
     cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
-    mm = Map(cells=cells, config=config)
+    mm = Map(cells=cells, config=config, cell_size=json_data["cellSize"])
 
     nodes = {}
     for n in json_data['nodes']:

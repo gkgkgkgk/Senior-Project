@@ -7,7 +7,7 @@ import math
 # Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
     # Every map is initiated with a point (0,0) which is where the robot starts (the LiDAR begins at the center of the map).
-    def __init__(self, cells=[], obstacles=[], config=[]):
+    def __init__(self, cells=[], obstacles=[], config=[], cell_size = 0.075):
         self.cells = []
         self.cells_map = {}
 
@@ -18,7 +18,7 @@ class Map:
         self.addCell(0,0,0)
         self.obstacles = obstacles
         self.config = config
-        self.cell_size = 0.075
+        self.cell_size = cell_size
         self.min = 0
         self.max = 0
 
