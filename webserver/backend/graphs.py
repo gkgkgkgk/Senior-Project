@@ -7,6 +7,8 @@ class PRM:
         self.nodes = nodes
         self.my_map = my_map
         np.random.seed(seed)
+        self.longest_edge = 0
+        self.find_longest_edge()
 
     def sample_node(self, x, y):
         key = str(x)+","+str(y)
@@ -31,6 +33,16 @@ class PRM:
         for pos in self.nodes:
             node = self.nodes[pos]
             node.edges.extend(self.find_knn(node, k))
+            for edge in node.edges:
+                if edge.distance(node) > self.longest_edge:
+                    self.longest_edge = edge.distance(node)
+
+    def find_longest_edge(self):
+        for pos in self.nodes:
+            node = self.nodes[pos]
+            for edge in node.edges:
+                if edge.distance(node) > self.longest_edge:
+                    self.longest_edge = edge.distance(node)
 
     def find_knn(self, node, k):
         nearest = sorted(self.nodes, key = lambda child: node.distance(self.nodes[child]))[1:]

@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example
+from api_utils import example, generate_prm_from_json
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -24,7 +24,7 @@ def getMap():
 
     mm = Map(cell_size=json_data["cellSize"])
 
-    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'])
+    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
     mm.normalize_weights()
 
     celllist = [{'x': cell.x, 'y': cell.y, 'raw_weight': cell.raw_weight, 'normalized_weight': cell.normalized_weight} for cell in mm.cells]
@@ -83,7 +83,7 @@ def getPath():
         nodes[str(n['x']) + "," + str(n['y'])].edges = edges
 
     path_map = PRM(len(nodes), json_data['graphSeed'], mm, nodes=nodes)
-
+    mm.longest_edge = path_map.longest_edge
     startPos = path_map.nodes[str(json_data['startPos']['x']) + "," + str(json_data['startPos']['y'])]
     endPos = path_map.nodes[str(json_data['endPos']['x']) + "," + str(json_data['endPos']['y'])]
 
@@ -101,7 +101,7 @@ def getPath():
 
 
 @app.route('/test', methods=['POST'])
-def runTest():    
+def runTest():  
     json_data = request.get_json()
     trials = json_data["test"]["trialCount"]
 
@@ -111,47 +111,54 @@ def runTest():
     cells = [{'x': cell['x'], 'y': cell['y'], 'raw_weight': cell['raw_weight'], 'normalized_weight': cell['normalized_weight']} for cell in json_data['cells']]
     mm = Map(cells=cells, config=config, cell_size=json_data["cellSize"])
 
-    nodes = {}
-    for n in json_data['nodes']:
-        nodes[str(n['x']) + "," + str(n['y'])] = Node(n['x'], n['y'])
-
-    for n in json_data['nodes']:
-        edges = []
-        for edge in n['edges']:
-            edges.append(nodes[str(edge['x'])+","+str(edge['y'])])
-        
-        nodes[str(n['x']) + "," + str(n['y'])].edges = edges
-
-    path_map = PRM(len(nodes), json_data['graphSeed'], mm, nodes=nodes)
-
-    startPos = path_map.nodes[str(json_data['startPos']['x']) + "," + str(json_data['startPos']['y'])]
-    endPos = path_map.nodes[str(json_data['endPos']['x']) + "," + str(json_data['endPos']['y'])]
-
+    
     test_results = []
 
     for i in range(trials):
-        if json_data["test"]["randomizeMap"]:
-            mm = Map()
-            mm.generate_random_map(32, 1/64, 8, seed=randint(1, 10000000))
-            path_map = PRM(700, randint(1, 10000000), mm)
-            path_map.connect_nodes_knn(7)
+        print("------------ Running Trial:", i, "---------------")
         
+        path_map = {}
+        if json_data["test"]["randomizeMap"]:
+            mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = randint(1, 10000000), amplitude=json_data['mapAmplitude'])
+            mm.normalize_weights()
+
+            path_map = PRM(json_data['prmSize'], randint(1, 10000000), mm, nodes={})
+            path_map.generate_points(mm, (json_data['startPos']['x'], json_data['startPos']['y']), (json_data['endPos']['x'], json_data['endPos']['y']))
+            path_map.connect_nodes_knn(json_data['knnSize'])
+    
+        else:
+            path_map = generate_prm_from_json(json_data['nodes'], mm, json_data["graphSeed"])
+        
+        mm.longest_edge = path_map.longest_edge
+        startPos = path_map.nodes[str(json_data['startPos']['x']) + "," + str(json_data['startPos']['y'])]
+        endPos = path_map.nodes[str(json_data['endPos']['x']) + "," + str(json_data['endPos']['y'])]
+
         speed = json_data['speedPref']
         energy = json_data['energyPref']
         safety = json_data['safetyPref']
 
         if json_data["test"]["randomizeUserPrefs"]:
-            speed = randint(0, 100)
-            energy = randint(0, 100)
-            safety = randint(0, 100)
+            speed = float(randint(0, 100))
+            energy = float(randint(0, 100))
+            safety = float(randint(0, 100))
+        
+        if(speed + energy + safety == 0):
+            speed = float(randint(0, 100))
+            energy = float(randint(0, 100))
+            safety = float(randint(0, 100))
+
+        
 
         astar = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
         astar.find_path(mm)
         test_results.append([speed, safety, energy, astar.path_costs["speed"], astar.path_costs["safety"], astar.path_costs["energy"]])
-
+        print(speed, safety, energy)
+        print(astar.path_costs)
+        astar = {}
     return jsonify({
         "results": test_results
     })
+    
 
 
 

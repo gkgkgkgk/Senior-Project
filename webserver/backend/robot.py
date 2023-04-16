@@ -20,3 +20,6 @@ class RobotConfig:
     def energy_vs_incline(self, rise, run):
         e = (self.max_speed * self.mass * self.gravity * rise) / (np.sqrt(rise **2 + run ** 2))
         return 0 if e < 0 else e
+
+    def max_energy_vs_incline(self):
+        return (self.max_speed * self.mass * self.gravity * np.sin(np.radians(self.max_incline_up)))

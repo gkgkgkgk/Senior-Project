@@ -1,7 +1,7 @@
 import numpy as np
 
 class Astar:
-    def __init__(self, start_node, end_node, speed=0, safety=0, energy=0):
+    def __init__(self, start_node, end_node, speed=0.0, safety=0.0, energy=0.0):
         self.start_node = start_node
         self.end_node = end_node
         self.path = []
@@ -11,7 +11,9 @@ class Astar:
         self.safety = safety
         self.path_costs = {}
         self.path_costs["speed"] = 0
+        self.path_costs["speed_raw"] = 0
         self.path_costs["energy"] = 0
+        self.path_costs["energy_raw"] = 0
         self.path_costs["safety"] = 0
         self.path_costs["limit"] = 0
 
@@ -60,9 +62,12 @@ class Astar:
                 for i in range(len(path)-1):
                     cost_array = my_map.calculate_cost(path[i], path[i+1], self.end_node, path[i].parent if path[i].parent != 0 else None, cost_array=True)
                     self.path_costs["speed"] += cost_array["speed"]
+                    self.path_costs["speed_raw"] += cost_array["speed_raw"]
                     self.path_costs["energy"] += cost_array["energy"]
+                    self.path_costs["energy_raw"] += cost_array["energy_raw"]
                     self.path_costs["safety"] += cost_array["safety"]
                     self.path_costs["limit"] += cost_array["limit"]
+                    # print("edge energy:", i, cost_array["energy"], cost_array["energy_raw"])
 
                 return path, self.path_costs
             
@@ -72,7 +77,7 @@ class Astar:
 
                 if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
-
+                
                 h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None, speed_weight=self.speed, safety_weight=self.safety, energy_weight=self.energy)
 
                 temp_g = selected_node.g + g

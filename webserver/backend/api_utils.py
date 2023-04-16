@@ -6,6 +6,22 @@ from pathfinding import Astar
 from robot import RobotConfig
 import numpy as np
 import time
+from graphs import PRM, Node
+
+
+def generate_prm_from_json(json_nodes, mm, seed):
+    nodes = {}
+    for n in json_nodes:
+        nodes[str(n['x']) + "," + str(n['y'])] = Node(n['x'], n['y'])
+
+    for n in json_nodes:
+        edges = []
+        for edge in n['edges']:
+            edges.append(nodes[str(edge['x'])+","+str(edge['y'])])
+        
+        nodes[str(n['x']) + "," + str(n['y'])].edges = edges
+
+    return PRM(len(nodes), seed, mm, nodes=nodes)
 
 def example():
     config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)

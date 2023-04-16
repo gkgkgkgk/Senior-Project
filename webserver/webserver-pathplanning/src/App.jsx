@@ -8,7 +8,7 @@ function App() {
   const [map, setMap] = useState(0)
   const [graph, setGraph] = useState(0)
   const [paths, setPaths] = useState([])
-  const pathColors = ['#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', ''];
+  const pathColors = ['#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc'];
 
 
   const addPath = (path) => {

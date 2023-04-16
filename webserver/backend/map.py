@@ -21,6 +21,7 @@ class Map:
         self.cell_size = cell_size
         self.min = 0
         self.max = 0
+        self.longest_edge = 0
 
     # A function that returns the cell object given x and y coordinates.
     def sampleCell(self, x, y):
@@ -99,7 +100,7 @@ class Map:
                 self.addCell(x,y,0)
 
     # This function uses a noise function to generate a random map.
-    def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5):
+    def generate_random_map(self, size, freq, octaves, seed=None, rocks=False, rockAmount=5, amplitude=1):
         self.cells = []
         self.cells_map = {}
 
@@ -118,12 +119,12 @@ class Map:
         for x in range(start, end):
             for y in range(start, end):
                 if not (x == 0 and y == 0):
-                    self.noise = noise.get_noise(x, y, freq, octaves=octaves)
+                    self.noise = noise.get_noise(x, y, freq, octaves=octaves) * amplitude
                     weight = (self.noise)
                     normal = np.random.uniform(-1,1,3).tolist()
                     self.addCell(x, y, weight, normal)
         
-        self.addCell(0, 0, 0, [0])
+        self.addCell(0, 0, 0, [0, 0, 0])
 
         if rocks:
             for _ in range(rockAmount):
@@ -143,14 +144,14 @@ class Map:
     def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1, cost_array=False):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
-        cost_speed = self.speed_cost(cells)
-        heuristic_speed =  self.speed_heuristic(b, d)
+        cost_speed, raw_cost_speed = self.speed_cost(cells)
+        heuristic_speed =  self.heuristic(b, d)
 
-        cost_energy = self.energy_cost(cells)
-        heuristic_energy = self.energy_heuristic(b, d)
+        cost_energy, raw_cost_energy = self.energy_cost(cells)
+        heuristic_energy = self.heuristic(b, d)
 
         cost_safety = self.safety_cost(cells, o)
-        heuristic_safety = self.safety_heuristic(b, d)
+        heuristic_safety = self.heuristic(b, d)
 
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
@@ -161,16 +162,17 @@ class Map:
 
         cost_array = {}
         cost_array['speed'] = cost_speed
+        cost_array['speed_raw'] = raw_cost_speed
         cost_array['energy'] = cost_energy
+        cost_array['energy_raw'] = raw_cost_energy
         cost_array['safety'] = cost_safety
         cost_array['limit'] = limit_cost
 
         return cost_array
 
-    def speed_heuristic(self, a, b):
+    def heuristic(self, a, b):
         h = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
 
-        # normalization around 1
         h /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2)
         return h
 
@@ -181,27 +183,23 @@ class Map:
         for i in range(0, len(cells_lengths)):
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])) 
 
-        score = 0
         distance = 0
+        # print("NEW EDGE:")
         for i in range(len(cells) - 1):
             cell1 = cells[i]
             cell2 = cells[i + 1]
             h = np.abs(cell1.raw_weight - cell2.raw_weight)
             l = cells_lengths[i][2]
             distance += np.sqrt(h ** 2 + l ** 2)
+        
+        distance += cells_lengths[len(cells)-1][2]
+        # print("END EDGE:", distance)
 
-        # step_n = np.sqrt(np.square(self.cell_size * self.graph.longest_edge) + np.square(self.graph.longest_edge * max(self.config.max_step_height_up,self.config.max_step_height_down)))
-        # incline_n = (self.cell_size * np.sqrt(2))/np.cos(np.radians(max(self.config.max_incline_up,self.config.max_incline_down)))
-        # return (distance/(max(step_n, incline_n))) / self.config.max_speed
+        # For the normalization, the assumption we make is that the max length of an edge is the theoretical length of an edge from the start point to the end point.
+        # Assuming the user has an appropriate PRM, they will never have an edge that long, and it is an appropriate upper bound.
+        d = np.tan(np.radians(self.config.max_incline_up)) * self.longest_edge
+        return distance/d, distance
 
-        return distance/(np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2))
-
-    def energy_heuristic(self, a, b):
-        e = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
-
-        # normalization around 1
-        e /= np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
-        return e
 
     # using the distance per cell and the incline to determine the energy expended by the robot
     def energy_cost(self, cells_lengths):
@@ -210,22 +208,35 @@ class Map:
             cells.append(self.sampleCell(cells_lengths[i][0], cells_lengths[i][1]))         
         energies = []
 
+        # ASSUMPTION: robot will not calculate energy_vs_incline if barely going through cell, as the robot is probably about the same size of the cell anyway.
         for i in range(len(cells) - 1):
             cell1 = cells[i]
             cell2 = cells[i + 1]
-            energy = self.cell_size * self.config.min_energy_per_unit + self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size))
+            incline_cost = 0
+
+            if(cells_lengths[i][2] > np.sqrt(2)/4):
+                incline_cost = self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size))
+            
+            h = np.abs(cell1.raw_weight - cell2.raw_weight)
+            l = cells_lengths[i][2]
+            distance = np.sqrt(h ** 2 + l ** 2)
+            
+            energy = self.cell_size * distance * self.config.min_energy_per_unit + incline_cost
             energies.append(energy)
+            # if energy < 50:
+            # print("(",cell1.x, cell1.y, cell2.x, cell2.y, ")", "segment", energy, self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size)), cell2.raw_weight - cell1.raw_weight)
+        
+        energies.append(self.cell_size * cells_lengths[len(cells_lengths)-1][2]* self.config.min_energy_per_unit)
+        e = np.sum(energies)
 
-        # I think this part is wrong.
-        # step_n = self.cell_size * self.config.min_energy_per_unit * self.graph.longest_edge + self.config.energy_vs_incline(max(self.config.max_step_height_up,self.config.max_step_height_down), self.graph.longest_edge)
-        # incline_n = self.cell_size * self.config.min_energy_per_unit * self.graph.longest_edge + self.config.energy_vs_incline(self.graph.longest_edge * max(np.tan(np.radians(self.config.max_incline_up)),np.tan(np.radians(self.config.max_incline_down))), self.graph.longest_edge)
-        # # return np.sum(energies) / max(step_n, incline_n)
-        d = np.sqrt((self.end_node.x - self.start_node.x) ** 2 + (self.end_node.y - self.start_node.y) ** 2) * self.cell_size * self.config.min_energy_per_unit
+        # print("EDGE:", cells[0].x, cells[0].y, cells[len(cells)-1].x, cells[len(cells)-1].y)
+        # for i in range(len(cells) - 1):
+        #     cell1 = cells[i]
+        #     cell2 = cells[i + 1]
+        #     print(i, e, self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size)), cell2.raw_weight - cell1.raw_weight)
 
-        return np.sum(energies) / d
-    
-    def safety_heuristic(self, a, b):
-        return np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2) * self.cell_size
+        d =  self.cell_size * self.config.min_energy_per_unit * np.tan(np.radians(self.config.max_incline_up)) * self.longest_edge + self.config.max_energy_vs_incline()
+        return e / d, e
     
     def safety_cost(self, cells_lengths, o):
         cells = []
@@ -276,7 +287,7 @@ class Map:
         
         # calculate variance of normals
         norm_variance = np.sum(np.var(cell_norms, axis = 0)) if cell_norms else 0
-
+        # print(turn_radius, step_safety, height_variance + norm_variance)
         return (turn_radius + step_safety + height_variance + norm_variance)/4
     
     def angle_between_points(self, a, b, c):

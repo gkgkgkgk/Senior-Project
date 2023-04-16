@@ -4,6 +4,7 @@ import "./Sidepanel.css"
 function SidePanel(props) {
     const [mapSize, setMapSize] = useState(32)
     const [cellSize, setCellSize] = useState(0.05)
+    const [mapAmplitude, setMapAmplitude] = useState(1)
     const [presetMap, setPresetMap] = useState("na")
     const [mapSeed, setMapSeed] = useState(123)
 
@@ -29,7 +30,7 @@ function SidePanel(props) {
     const [trialCount, setTrialCount] = useState(100)
     const [randomizeMap, setRandomizeMap] = useState(false)
     const [randomizeRobot, setRandomizeRobot] = useState(false)
-    const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(true)
+    const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(false)
     const [randomizePositions, setRandomizePositions] = useState(false)
     const [runAstar, setRunAstar] = useState(false)
 
@@ -42,7 +43,8 @@ function SidePanel(props) {
             mapSize,
             cellSize,
             presetMap,
-            mapSeed
+            mapSeed,
+            mapAmplitude
         };
 
         fetch('http://127.0.0.1:5000/get-map', {
@@ -58,6 +60,7 @@ function SidePanel(props) {
 
         let input_data = {
             prmSize,
+            mapAmplitude,
             cellSize,
             knnSize,
             graphSeed,
@@ -80,6 +83,7 @@ function SidePanel(props) {
             nodes: props.my_graph.nodes,
             cellSize,
             startPos,
+            mapAmplitude,
             endPos,
             speedPref,
             safetyPref, 
@@ -112,6 +116,10 @@ function SidePanel(props) {
             cells: props.my_map.cells,
             nodes: props.my_graph.nodes,
             cellSize,
+            mapSize,
+            prmSize,
+            knnSize,
+            mapAmplitude,
             startPos,
             endPos,
             speedPref,
@@ -159,6 +167,10 @@ function SidePanel(props) {
                 <div className="form-item">
                     <label for="cell_size">Cell Size:</label>
                     <input type="number" id="cell_size" name="cell_size" defaultValue={0.05} step={0.05} min="0.001" max="5" onChange={e => setCellSize(parseFloat(e.target.value))} />
+                </div>
+                <div className="form-item">
+                    <label for="map_amplitude">Map Amplitude:</label>
+                    <input type="number" id="map_amplitude" name="map_amplitude" defaultValue={1} step={0.1} min="0.1" max="50" onChange={e => setMapAmplitude(parseFloat(e.target.value))} />
                 </div>
                 <div className="form-item">
                     <label for="preset_map">Preset Map:</label>
@@ -277,7 +289,7 @@ function SidePanel(props) {
 
                 <div className="form-item">
                     <label for="r_user">Randomize User Prefs</label>
-                    <input type="checkbox" id="r_user" name="r_user" checked onChange={e => setRandomizeUserPrefs(!randomizeUserPrefs)}/>
+                    <input type="checkbox" id="r_user" name="r_user" onChange={e => setRandomizeUserPrefs(!randomizeUserPrefs)}/>
                 </div>
 
                 <div className="form-item">
