@@ -6,7 +6,6 @@ class RobotConfig:
         self.gravity = gravity
         self.friction = friction
         self.wheel_diameter = wheel_diameter
-        self.gravity = gravity
         self.width = width
 
     def __init__(self, max_speed, max_step_height_up, max_step_height_down, max_incline_up, max_incline_down, min_energy_per_unit):
@@ -22,4 +21,5 @@ class RobotConfig:
         return 0 if e < 0 else e
 
     def max_energy_vs_incline(self):
+        # TODO: I think this needs to be multiplied by the longest edge.
         return (self.max_speed * self.mass * self.gravity * np.sin(np.radians(self.max_incline_up)))

@@ -151,7 +151,7 @@ class Map:
         heuristic_energy = self.heuristic(b, d)
 
         cost_safety = self.safety_cost(cells, o)
-        heuristic_safety = self.heuristic(b, d)
+        heuristic_safety = 0
 
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
