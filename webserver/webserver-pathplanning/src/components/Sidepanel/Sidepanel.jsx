@@ -29,6 +29,7 @@ function SidePanel(props) {
 
     const [trialCount, setTrialCount] = useState(100)
     const [randomizeMap, setRandomizeMap] = useState(false)
+    const [mapCount, setMapCount] = useState(1)
     const [randomizeRobot, setRandomizeRobot] = useState(false)
     const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(false)
     const [randomizePositions, setRandomizePositions] = useState(false)
@@ -117,6 +118,7 @@ function SidePanel(props) {
             nodes: props.my_graph.nodes,
             cellSize,
             mapSize,
+            mapSeed,
             prmSize,
             knnSize,
             mapAmplitude,
@@ -142,7 +144,8 @@ function SidePanel(props) {
                 randomizePositions,
                 randomizeRobot,
                 randomizeUserPrefs,
-                runAstar
+                runAstar,
+                mapCount
             }
         };
 
@@ -151,7 +154,7 @@ function SidePanel(props) {
             headers: {
                 'Content-Type': 'application/json'
             }, body: JSON.stringify(input_data)
-        }).then(response => response.json()).then(data => { console.log(data);});
+        }).then(response => response.json()).then(data => { props.setResults(data)});
     }
 
     return (
@@ -280,6 +283,11 @@ function SidePanel(props) {
                 <div className="form-item">
                     <label for="r_map">Randomize Map</label>
                     <input type="checkbox" id="r_map" name="r_map" onChange={e => setRandomizeMap(!randomizeMap)}/>
+                </div>
+
+                <div className="form-item">
+                    <label for="map_count">Map Count:</label>
+                    <input type="number" id="map_count" name="map_count" min="0" max="1000" defaultValue={1} onChange={e => setMapCount(parseInt(e.target.value))} />
                 </div>
 
                 <div className="form-item">

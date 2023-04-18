@@ -8,6 +8,23 @@ function App() {
   const [map, setMap] = useState(0)
   const [graph, setGraph] = useState(0)
   const [paths, setPaths] = useState([])
+
+  const generateResults = (results) => {
+    let columns = Object.keys(results.results[0].config).concat(Object.keys(results.results[0].costs), Object.keys(results.results[0].map), Object.keys(results.results[0].prefs), 'time').join(',');
+    console.log(results)
+    let rows = results.results.map(r => {
+      return Object.values(r.config).concat(Object.values(r.costs), Object.values(r.map), Object.values(r.prefs), r.time).join(',');
+    })
+
+    rows.unshift(columns);
+    let csvString = rows.join('\n');
+    console.log(rows)
+
+    let dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvString);
+
+    window.open(dataUri);
+  };
+
   const pathColors = ['#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc'];
 
 
@@ -26,7 +43,7 @@ function App() {
       <Canvas my_map={map} graph={graph} paths={paths} pathColors={pathColors} width={1024} height={1024}></Canvas>
       <PathManager paths={paths} pathColors={pathColors}></PathManager>
       </div>
-      <SidePanel my_map={map} my_graph={graph} setMap={setMap} setGraph={setGraph} addPath={addPath} setPaths={setPaths}></SidePanel>
+      <SidePanel my_map={map} my_graph={graph} setMap={setMap} setGraph={setGraph} setResults={generateResults} addPath={addPath} setPaths={setPaths}></SidePanel>
     </div>
   )
 }
