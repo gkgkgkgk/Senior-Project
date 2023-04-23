@@ -9,6 +9,10 @@ function App() {
   const [graph, setGraph] = useState(0)
   const [paths, setPaths] = useState([])
 
+  const clearPaths = () => {
+    setPaths([]);
+  }
+
   const generateResults = (results) => {
     let columns = Object.keys(results.results[0].config).concat(Object.keys(results.results[0].costs), Object.keys(results.results[0].map), Object.keys(results.results[0].prefs), 'time').join(',');
     console.log(results)
@@ -43,7 +47,7 @@ function App() {
       <Canvas my_map={map} graph={graph} paths={paths} pathColors={pathColors} width={1024} height={1024}></Canvas>
       <PathManager paths={paths} pathColors={pathColors}></PathManager>
       </div>
-      <SidePanel my_map={map} my_graph={graph} setMap={setMap} setGraph={setGraph} setResults={generateResults} addPath={addPath} setPaths={setPaths}></SidePanel>
+      <SidePanel my_map={map} my_graph={graph} setMap={setMap} setGraph={setGraph} setResults={generateResults} addPath={addPath} setPaths={setPaths} clearPaths={clearPaths}></SidePanel>
     </div>
   )
 }

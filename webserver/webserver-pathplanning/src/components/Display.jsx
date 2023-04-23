@@ -10,6 +10,7 @@ const Display = (props) => {
     const [cellHover, setCellHover] = useState({});
     const [center, setCenter] = useState(0);
     const [cell_size, setCellSize] = useState(0);
+    const [pathContainer, setPathContainer] = useState(null);
 
     useEffect(setup, []);
 
@@ -131,9 +132,17 @@ const Display = (props) => {
 
     function generatePaths(){
         let paths = props.paths;
+        let newPathContainer = new PIXI.Container();
+
+        if(pathContainer != null){
+            pathContainer.removeChildren();
+            app.stage.removeChild(pathContainer);
+            newPathContainer = pathContainer;
+        }
 
         if(paths && paths.length > 0){
-            let pathsContainer = new PIXI.Container();
+            let newPathContainer = new PIXI.Container();
+            
             paths.forEach((path, pathIndex) => {
                 let nodeContainer = new PIXI.Container();
 
@@ -158,10 +167,12 @@ const Display = (props) => {
                     }
                 })
 
-                pathsContainer.addChild(nodeContainer);
+                newPathContainer.addChild(nodeContainer);
             })
 
-            app.stage.addChild(pathsContainer);
+            
+            app.stage.addChild(newPathContainer);
+            setPathContainer(newPathContainer);
         }
     }
 

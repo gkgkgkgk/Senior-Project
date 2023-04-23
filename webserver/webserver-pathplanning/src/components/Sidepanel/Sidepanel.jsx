@@ -35,8 +35,6 @@ function SidePanel(props) {
     const [randomizePositions, setRandomizePositions] = useState(false)
     const [runAstar, setRunAstar] = useState(false)
 
-
-
     const handleClickMap = () => {
         props.setGraph(0)
         props.setPaths([])
@@ -320,7 +318,7 @@ function SidePanel(props) {
                     <input type="checkbox" id="save_path" name="save_path" />
                 </div>
             </div>
-            <button className="load-button">Clear Paths</button>
+            <button className="load-button" onClick={props.clearPaths}>Clear Paths</button>
 
         </div>
     );
