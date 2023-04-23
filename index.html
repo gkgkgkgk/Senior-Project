@@ -82,6 +82,24 @@
                     let size = Math.min(window.innerWidth, window.innerHeight) / 1.5;
                     renderer.setSize(Math.floor(size), Math.floor(size));
                 }
+                document.getElementById('getDataBtn').addEventListener('click', getData);
+                function getData() {
+                    fetch('https://7752-72-225-165-113.ngrok-free.app', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            name: 'John Doe',
+                            email: 'johndoe@example.com'
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                        console.log(data);
+                        })
+                        .catch(error => console.error(error));
+                    }
 
                 function generateMap() {
                     let terrainData = []
@@ -128,7 +146,7 @@
             <label for="energy-slider">Energy</label>
             <input type="range" id="energy-slider" name="energy" min="0" max="100" value="50">
             <hr>
-            <button>Generate Path!</button>
+            <button id="getDataBtn">Generate Path!</button>
             <button>Clear Paths</button>
         </div>
     </div>
