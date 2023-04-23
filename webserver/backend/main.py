@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example, generate_prm_from_json
+from api_utils import example, generate_prm_from_json, defaultMap
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -25,7 +25,12 @@ def getMap():
 
     mm = Map(cell_size=json_data["cellSize"])
 
-    mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
+    print(json_data["presetMap"])
+    if json_data["presetMap"] != "na":
+        mm = defaultMap(json_data["cellSize"])
+    else:
+        mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
+    
     mm.normalize_weights()
 
     celllist = [{'x': cell.x, 'y': cell.y, 'raw_weight': cell.raw_weight, 'normalized_weight': cell.normalized_weight} for cell in mm.cells]
