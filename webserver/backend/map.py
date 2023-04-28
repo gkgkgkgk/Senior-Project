@@ -144,14 +144,20 @@ class Map:
     def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1, cost_array=False):
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
-        cost_speed, raw_cost_speed = self.speed_cost(cells)
-        heuristic_speed =  self.heuristic(b, d)
+        cost_speed, raw_cost_speed, heuristic_speed = 0, 0, 0
+        if speed_weight != 0:
+            cost_speed, raw_cost_speed = self.speed_cost(cells)
+            heuristic_speed =  self.heuristic(b, d)
 
-        cost_energy, raw_cost_energy = self.energy_cost(cells)
-        heuristic_energy = self.heuristic(b, d)
+        cost_energy, raw_cost_energy, heuristic_energy = 0, 0, 0
+        if energy_weight != 0:
+            cost_energy, raw_cost_energy = self.energy_cost(cells)
+            heuristic_energy = self.heuristic(b, d)
 
-        cost_safety = self.safety_cost(cells, o)
-        heuristic_safety = 0
+        cost_safety, heuristic_safety = 0, 0
+        if safety_weight != 0:
+            cost_safety = self.safety_cost(cells, o)
+            heuristic_safety = 0
 
         heuristic = heuristic_speed * speed_weight + heuristic_energy * energy_weight + heuristic_safety * safety_weight
         cost = cost_speed * speed_weight + cost_energy * energy_weight + cost_safety * safety_weight
@@ -284,7 +290,7 @@ class Map:
                                 variance_cell_vals.append(temp_cell.raw_weight)
 
         height_variance = 10*np.var(variance_cell_vals)
-        
+
         # calculate variance of normals
         norm_variance = np.sum(np.var(cell_norms, axis = 0)) if cell_norms else 0
         # print(turn_radius, step_safety, height_variance + norm_variance)
@@ -332,7 +338,6 @@ class Map:
     # TODO: IMPLEMENT THIS USING TRANSLATION AND SINGLE CALCULATION
     # either we can use a big rectanlge bounding box and check every square and its distance to the line, or we can use a rotated rectangle and check every box.
     def check_clearence(self, cells):
-        start = cells[0]
         end = cells[len(cells)-1]
 
         for i in range(len(cells)-1):
