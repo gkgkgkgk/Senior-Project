@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example, generate_prm_from_json, defaultMap
+from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -26,8 +26,10 @@ def getMap():
     mm = Map(cell_size=json_data["cellSize"])
 
     print(json_data["presetMap"])
-    if json_data["presetMap"] != "na":
+    if json_data["presetMap"] == "testmap":
         mm = defaultMap(json_data["cellSize"])
+    elif json_data["presetMap"] == "obstaclemap":
+        mm = clearenceMap(json_data["cellSize"])
     else:
         mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
     

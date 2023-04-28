@@ -178,6 +178,7 @@ function SidePanel(props) {
                     <select onChange={e => setPresetMap(e.target.value)}>
                         <option value="na">None</option>
                         <option value="testmap">Default Test Map</option>
+                        <option value="obstaclemap">Obstacle Test Map</option>
                     </select>
                 </div>
                 <div className="form-item">

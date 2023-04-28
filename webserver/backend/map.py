@@ -3,6 +3,7 @@ from noise import Noise
 from cell_intersect import get_intersect_cells
 import time
 import math
+from scipy import ndimage
 # This class is responsible for creating a map. This is the map that will be generated based on pointcloud data.
 # Units are all measured in FEET. Therefore, when the cell size is set to 1, it is a 1ft by 1ft space.
 class Map:
@@ -28,10 +29,6 @@ class Map:
         if str(x)+","+str(y) in self.cells_map:
             return self.cells_map[str(x)+","+str(y)]
 
-        return None
-        for cell in self.cells:
-            if int(x) == cell.x and int(y) == cell.y:
-                return cell
         return None
     
     # A function to add a cell at a point. If te cell exists, it will overrride the cell.
@@ -338,11 +335,6 @@ class Map:
     # TODO: IMPLEMENT THIS USING TRANSLATION AND SINGLE CALCULATION
     # either we can use a big rectanlge bounding box and check every square and its distance to the line, or we can use a rotated rectangle and check every box.
     def check_clearence(self, cells):
-        end = cells[len(cells)-1]
-
-        for i in range(len(cells)-1):
-            get_intersect_cells([cells[i].x, cells[i].y], [end.x, end.y], plot = False)
-
         length = int((self.config.width / self.cell_size) / 2)
         if length == 0:
             length = 1

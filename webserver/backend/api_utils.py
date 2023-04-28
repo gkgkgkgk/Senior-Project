@@ -60,12 +60,6 @@ def defaultMap(cell_size):
     for i in range(-16, -12):
         for j in range(13, 15):
             my_map.setCell(i, j, 0.445)
-            
-    
-    
-
-    
-
         # my_map.setCell(-4+i, 10-i, weight)
         # my_map.setCell(-3+i, 11-i, weight)
         # my_map.setCell(-2+i, 12-i, weight)
@@ -90,60 +84,14 @@ def defaultMap(cell_size):
 
     weight = 0.32
 
-    # for i in range(2):
-    #     my_map.setCell(-5+i, 15, weight)
-    #     my_map.setCell(-5+i, 14, weight)
-    #     my_map.setCell(-5+i, 13, weight)
-    #     my_map.setCell(-5+i, 12, weight)
-    #     my_map.setCell(-5+i, 11, weight)
-    #     weight -= 0.03
+    return my_map
 
-    # weight = 0.26
-    # for i in range(11):
-    #     my_map.setCell(-3+i, 15, weight)
-    #     my_map.setCell(-3+i, 14, weight)
-    #     my_map.setCell(-3+i, 13, weight)
-    #     my_map.setCell(-3+i, 12, weight)
-    #     my_map.setCell(-3+i, 11, weight)
-    #     my_map.setCell(-3+i, 10, (weight/1.25) + np.random.uniform()/20.0)
-    #     my_map.setCell(-3+i, 9, (weight/1.5) + np.random.uniform()/20.0)
-    #     my_map.setCell(-3+i, 8, (weight/2) + np.random.uniform()/20.0)
-    #     my_map.setCell(-3+i, 7, (weight/4) + np.random.uniform()/20.0)
-    #     weight += 0.04
+def clearenceMap(cell_size):
+    my_map = Map(cell_size=cell_size)
+    my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=231)
 
-    # for i in range(3):
-    #     my_map.setCell(8 + i, 15, weight)
-    #     my_map.setCell(8+i, 14, weight)
-    #     my_map.setCell(8+i, 13, weight)
-    #     my_map.setCell(8+i, 12, weight)
-    #     my_map.setCell(8+i, 11, weight)
-    #     my_map.setCell(8+i, 10, (weight/1.25) + np.random.uniform()/20.0)
-    #     my_map.setCell(8+i, 9, (weight/1.5) + np.random.uniform()/20.0)
-    #     my_map.setCell(8+i, 8, (weight/2) + np.random.uniform()/20.0)
-    #     my_map.setCell(8+i, 7, (weight/4) + np.random.uniform()/20.0)
-    #     weight -= 0.08
-
-    # for i in range(11, 16):
-    #     for j in range(11, 16):
-    #         my_map.setCell(i, j, weight)
-
-
-    # for i in range(10):
-    #     my_map.setCell(11, 10 - i, weight)
-    #     my_map.setCell(12, 10 - i, weight)
-    #     my_map.setCell(13, 10 - i, weight)
-    #     my_map.setCell(14, 10 - i, weight)
-    #     my_map.setCell(15, 10 - i, weight)
-
-    #     weight -= 0.08
-
-    # for i in range(-9, 3):
-    #     for j in range(-14, -2):
-    #         my_map.setCell(i, j, np.random.uniform() / 7.5, additive = True)
-    
-    # for i in range(-16, -11):
-    #     for j in range(3, 8):
-    #         my_map.setCell(i, j, np.random.uniform() / 7.5, additive = True)
+    my_map.setCell(1, 3, 1)
+    my_map.setCell(-1, -3, 1)
     
     return my_map
 
