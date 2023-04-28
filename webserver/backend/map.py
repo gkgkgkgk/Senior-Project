@@ -147,17 +147,17 @@ class Map:
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
 
         cost_speed, raw_cost_speed, heuristic_speed = 0, 0, 0
-        if speed_weight != 0:
+        if speed_weight != 0 or cost_array:
             cost_speed, raw_cost_speed = self.speed_cost(cells)
             heuristic_speed =  self.heuristic(b, d)
 
         cost_energy, raw_cost_energy, heuristic_energy = 0, 0, 0
-        if energy_weight != 0:
+        if energy_weight != 0 or cost_array:
             cost_energy, raw_cost_energy = self.energy_cost(cells)
             heuristic_energy = self.heuristic(b, d)
 
         cost_safety, heuristic_safety = 0, 0
-        if safety_weight != 0:
+        if safety_weight != 0 or cost_array:
             cost_safety = self.safety_cost(cells, o)
             heuristic_safety = 0
 
@@ -207,7 +207,7 @@ class Map:
 
         # For the normalization, the assumption we make is that the max length of an edge is the theoretical length of an edge from the start point to the end point.
         # Assuming the user has an appropriate PRM, they will never have an edge that long, and it is an appropriate upper bound.
-        d = np.tan(np.radians(self.config.max_incline_up)) * self.longest_edge
+        d = self.longest_edge/np.cos(np.radians(self.config.max_incline_up))
         return distance/d, distance
 
 
@@ -245,7 +245,7 @@ class Map:
         #     cell2 = cells[i + 1]
         #     print(i, e, self.config.energy_vs_incline(cell2.raw_weight - cell1.raw_weight, cell1.distance(cell2, self.cell_size)), cell2.raw_weight - cell1.raw_weight)
 
-        d =  self.cell_size * self.config.min_energy_per_unit * np.tan(np.radians(self.config.max_incline_up)) * self.longest_edge + self.config.max_energy_vs_incline()
+        d =  self.cell_size * self.config.min_energy_per_unit * (self.longest_edge/np.cos(np.radians(self.config.max_incline_up))) + self.config.max_energy_vs_incline()
         return e / d, e
     
     def safety_cost(self, cells_lengths, o):
