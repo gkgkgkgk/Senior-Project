@@ -90,8 +90,8 @@ def clearenceMap(cell_size):
     my_map = Map(cell_size=cell_size)
     my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=231)
 
-    my_map.setCell(1, 3, 1)
-    my_map.setCell(-1, -3, 1)
+    my_map.setCell(2, 2, 1)
+    my_map.setCell(-2, -2, 1)
     
     return my_map
 

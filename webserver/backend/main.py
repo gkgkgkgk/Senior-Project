@@ -14,11 +14,6 @@ import time
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-# config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
-# config.user_init(20, 0.01, 1, 0.225)
-# seed = 123
-# path_map = PRM(600, seed, my_map)
-
 @app.route('/get-map', methods=['POST'])
 def getMap():
     json_data = request.get_json()
@@ -207,9 +202,6 @@ def runTest():
     return jsonify({
         "results": test_results
     })
-    
-
-
 
 
 if __name__ == '__main__':

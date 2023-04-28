@@ -290,7 +290,7 @@ class Map:
 
         # calculate variance of normals
         norm_variance = np.sum(np.var(cell_norms, axis = 0)) if cell_norms else 0
-        # print(turn_radius, step_safety, height_variance + norm_variance)
+
         return (turn_radius + step_safety + height_variance + norm_variance)/4
     
     def angle_between_points(self, a, b, c):
@@ -332,8 +332,6 @@ class Map:
         
         return 0
 
-    # TODO: IMPLEMENT THIS USING TRANSLATION AND SINGLE CALCULATION
-    # either we can use a big rectanlge bounding box and check every square and its distance to the line, or we can use a rotated rectangle and check every box.
     def check_clearence(self, cells):
         length = int((self.config.width / self.cell_size) / 2)
         if length == 0:
@@ -343,7 +341,7 @@ class Map:
             for x in range(cell.x - length, cell.x + length + 1):
                 for y in range(cell.y - length, cell.y + length + 1):
                     c = self.sampleCell(x, y)
-                    if c != None and np.abs(c.raw_weight - cell.raw_weight) > self.config.max_step_height_up:
+                    if c != None and (c.raw_weight - cell.raw_weight > self.config.max_step_height_up or cell.raw_weight - c.raw_weight > self.config.max_step_height_down):
                         return False
         return True
 
