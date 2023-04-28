@@ -91,7 +91,7 @@ def getPath():
     endPos = path_map.nodes[str(json_data['endPos']['x']) + "," + str(json_data['endPos']['y'])]
 
     astar = Astar(startPos, endPos, speed = json_data['speedPref'], energy = json_data['energyPref'], safety = json_data['safetyPref'])
-    astar.find_path(mm)
+    astar.find_path(mm, vanilla=json_data['distanceBased'])
     print(astar.path_costs)
     
     path = []
@@ -160,6 +160,12 @@ def runTest():
             astar = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
             astar.find_path(mm)
             elapsed_time = (time.time_ns() // 1000000) - start_time
+
+            start_time = time.time_ns() // 1000000
+            astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+            astar2.find_path(mm, vanilla=True)
+            elapsed_time = (time.time_ns() // 1000000) - start_time
+
             result = {}
             result["prefs"] = {}
             result["costs"] = {}
