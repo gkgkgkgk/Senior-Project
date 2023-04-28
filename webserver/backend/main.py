@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example, generate_prm_from_json, defaultMap
+from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -14,11 +14,6 @@ import time
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-# config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
-# config.user_init(20, 0.01, 1, 0.225)
-# seed = 123
-# path_map = PRM(600, seed, my_map)
-
 @app.route('/get-map', methods=['POST'])
 def getMap():
     json_data = request.get_json()
@@ -26,8 +21,10 @@ def getMap():
     mm = Map(cell_size=json_data["cellSize"])
 
     print(json_data["presetMap"])
-    if json_data["presetMap"] != "na":
+    if json_data["presetMap"] == "testmap":
         mm = defaultMap(json_data["cellSize"])
+    elif json_data["presetMap"] == "obstaclemap":
+        mm = clearenceMap(json_data["cellSize"])
     else:
         mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
     
@@ -205,9 +202,6 @@ def runTest():
     return jsonify({
         "results": test_results
     })
-    
-
-
 
 
 if __name__ == '__main__':

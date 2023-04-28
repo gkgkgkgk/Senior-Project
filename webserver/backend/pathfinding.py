@@ -55,19 +55,19 @@ class Astar:
                     node = node.parent
                     totalCost += node.g
                 path = np.flip(reversePath)
-                # pct_err = ((totalCost / len(path)) - np.sqrt(2 * 600 * 2) ) / np.sqrt(2 * 600 * 2)
+
                 self.path = path
                 self.path_cost = totalCost
                 
                 for i in range(len(path)-1):
-                    cost_array = my_map.calculate_cost(path[i], path[i+1], self.end_node, path[i].parent if path[i].parent != 0 else None, cost_array=True)
+                    cost_array = my_map.calculate_cost(path[i], path[i+1], self.end_node, path[i].parent if path[i].parent != 0 else None, cost_array=True, speed_weight=self.speed, safety_weight=self.safety, energy_weight=self.energy)
                     self.path_costs["speed"] += cost_array["speed"]
                     self.path_costs["speed_raw"] += cost_array["speed_raw"]
                     self.path_costs["energy"] += cost_array["energy"]
                     self.path_costs["energy_raw"] += cost_array["energy_raw"]
                     self.path_costs["safety"] += cost_array["safety"]
                     self.path_costs["limit"] += cost_array["limit"]
-                    # print("edge energy:", i, cost_array["energy"], cost_array["energy_raw"])
+
 
                 return path, self.path_costs
             
@@ -84,8 +84,6 @@ class Astar:
                 
                 if temp_g + h > child.f:
                     continue
-                # if child in opened and temp_g > selected_node.g:
-                #     continue
 
                 child.g = temp_g
                 child.h = h
