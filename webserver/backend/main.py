@@ -161,11 +161,6 @@ def runTest():
             astar.find_path(mm)
             elapsed_time = (time.time_ns() // 1000000) - start_time
 
-            start_time = time.time_ns() // 1000000
-            astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
-            astar2.find_path(mm, vanilla=True)
-            elapsed_time = (time.time_ns() // 1000000) - start_time
-
             result = {}
             result["prefs"] = {}
             result["costs"] = {}
@@ -180,6 +175,8 @@ def runTest():
             result["costs"]["energyCost"] = astar.path_costs["energy"]
             result["costs"]["speedCostRaw"] = astar.path_costs["speed_raw"]
             result["costs"]["energyCostRaw"] = astar.path_costs["energy_raw"]
+            result["costs"]["distance"] = astar.path_costs["distance"]
+            result["costs"]["limitation"] = astar.path_costs["limitation"]
             result["map"]["mapSeed"] = map_seed
             result["map"]["graph_seed"] = graph_seed
             result["map"]["cellSize"] = json_data["cellSize"]
@@ -200,6 +197,24 @@ def runTest():
             result["config"]["mass"] = config.mass
             result["config"]["width"] = config.width
             result["time"] = elapsed_time
+
+            if(json_data['test']['runAstar']):
+                path_map.reset()
+                start_time2 = time.time_ns()// 1000000
+                astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+                astar2.find_path(mm, vanilla=True)
+                elapsed_time2 = (time.time_ns()// 1000000) - start_time2
+                print(astar2.path)
+                result["vanilla"] = {}
+                result["vanilla"]["costs"] = {}
+                result["vanilla"]["time"] = elapsed_time2
+                result["vanilla"]["costs"]["speedCost"] = astar2.path_costs["speed"]
+                result["vanilla"]["costs"]["safetyCost"] = astar2.path_costs["safety"]
+                result["vanilla"]["costs"]["energyCost"] = astar2.path_costs["energy"]
+                result["vanilla"]["costs"]["speedCostRaw"] = astar2.path_costs["speed_raw"]
+                result["vanilla"]["costs"]["energyCostRaw"] = astar2.path_costs["energy_raw"]
+                result["vanilla"]["costs"]["distance"] = astar2.path_costs["distance"]
+                result["vanilla"]["costs"]["limitation"] = astar2.path_costs["limitation"]
 
             test_results.append(result)
             print(speed, safety, energy)

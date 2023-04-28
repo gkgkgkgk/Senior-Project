@@ -139,12 +139,14 @@ class Map:
     # This function calculates the cost from point a to b. d is destination 
 
     def calculate_cost(self, a, b, d, o, speed_weight = 0, energy_weight = 0, safety_weight = 1, cost_array=False, distance_based=False):
-        if distance_based:
-            h = np.sqrt((d.x - a.x) ** 2 + (d.y - a.y) ** 2)
-            g = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
-            return h, g
-
         cells = get_intersect_cells([a.x, a.y], [b.x, b.y], plot = False)
+        
+        if distance_based:
+            limit_cost = self.limitation_cost(cells, check_clearence = True)
+            h = np.sqrt((d.x - b.x) ** 2 + (d.y - b.y) ** 2)
+            g = np.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2)
+            return h, g + limit_cost
+
 
         cost_speed, raw_cost_speed, heuristic_speed = 0, 0, 0
         if speed_weight != 0 or cost_array:
@@ -177,6 +179,7 @@ class Map:
         cost_array['safety'] = cost_safety
         cost_array['limit'] = limit_cost
         cost_array['distance'] = distance
+        cost_array['limitation'] = limit_cost
 
         return cost_array
 

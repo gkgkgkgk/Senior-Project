@@ -17,6 +17,7 @@ class Astar:
         self.path_costs["safety"] = 0
         self.path_costs["limit"] = 0
         self.path_costs["distance"] = 0
+        self.path_costs["limitation"] = 0
 
     def find_path(self, my_map, vanilla=False):
         my_map.start_node = self.start_node
@@ -69,6 +70,7 @@ class Astar:
                     self.path_costs["safety"] += cost_array["safety"]
                     self.path_costs["limit"] += cost_array["limit"]
                     self.path_costs["distance"] += cost_array["distance"]
+                    self.path_costs["limitation"] += cost_array["limitation"]
 
 
                 return path, self.path_costs

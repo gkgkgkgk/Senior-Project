@@ -16,6 +16,13 @@ class PRM:
             return self.nodes[key]
         return None
 
+    def reset(self):
+        for node in self.nodes:
+            self.nodes[node].parent = 0
+            self.nodes[node].f = 100000000
+            self.nodes[node].g = 0
+            self.nodes[node].h = 0
+
     def generate_points(self, terrain, a=(0,0), b=(0,1)):
         self.nodes[str(a[0]) + "," + str(a[1])] = Node(a[0], a[1])
         self.nodes[str(b[0]) + "," + str(b[1])] = Node(b[0], b[1])
