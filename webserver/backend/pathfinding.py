@@ -16,8 +16,9 @@ class Astar:
         self.path_costs["energy_raw"] = 0
         self.path_costs["safety"] = 0
         self.path_costs["limit"] = 0
+        self.path_costs["distance"] = 0
 
-    def find_path(self, my_map):
+    def find_path(self, my_map, vanilla=False):
         my_map.start_node = self.start_node
         my_map.end_node = self.end_node
 
@@ -67,6 +68,7 @@ class Astar:
                     self.path_costs["energy_raw"] += cost_array["energy_raw"]
                     self.path_costs["safety"] += cost_array["safety"]
                     self.path_costs["limit"] += cost_array["limit"]
+                    self.path_costs["distance"] += cost_array["distance"]
 
 
                 return path, self.path_costs
@@ -78,7 +80,10 @@ class Astar:
                 if child in closed: # child should never be in closed if it could be reached at a lower cost
                     continue
                 
-                h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None, speed_weight=self.speed, safety_weight=self.safety, energy_weight=self.energy)
+                if not vanilla:
+                    h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None, speed_weight=self.speed, safety_weight=self.safety, energy_weight=self.energy)
+                else:
+                    h, g = my_map.calculate_cost(selected_node, child, self.end_node, selected_node.parent if selected_node.parent != 0 else None, distance_based=True)
 
                 temp_g = selected_node.g + g
                 

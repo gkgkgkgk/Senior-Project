@@ -34,6 +34,8 @@ function SidePanel(props) {
     const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(false)
     const [randomizePositions, setRandomizePositions] = useState(false)
     const [runAstar, setRunAstar] = useState(false)
+    
+    const [distanceBased, setDistanceBased] = useState(false)
 
     const handleClickMap = () => {
         props.setGraph(0)
@@ -88,6 +90,7 @@ function SidePanel(props) {
             safetyPref, 
             energyPref,
             graphSeed,
+            distanceBased,
             config: {
                 mass, 
                 width,
@@ -314,6 +317,10 @@ function SidePanel(props) {
             <hr></hr>
             <h2>Options</h2>
             <div className='myform'>
+                <div className="form-item">
+                    <label for="distance_based">Distance Based Test</label>
+                    <input type="checkbox" id="distance_based" name="distance_based" onChange={e => setDistanceBased(!distanceBased)}/>
+                </div>
                 <div className="form-item">
                     <label for="save_path">Override Paths</label>
                     <input type="checkbox" id="save_path" name="save_path" />
