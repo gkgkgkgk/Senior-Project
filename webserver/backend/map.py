@@ -250,17 +250,17 @@ class Map:
     
     def safety_cost(self, cells_lengths, o):
         cells = []
-        variance_cell_vals = []
+        cell_heights = []
         cell_norms = []
 
         for i in range(0, len(cells_lengths)):
             temp_cell = self.sampleCell(cells_lengths[i][0], cells_lengths[i][1])
             cells.append(temp_cell)
-            variance_cell_vals.append(temp_cell.raw_weight)
+            cell_heights.append(temp_cell.raw_weight)
             if(temp_cell.normal != None):
                 cell_norms.append(temp_cell.normal)
 
-        # step safety is between 0 and 1, depending on how close the height is to the maximum step height.s
+        # step safety is between 0 and ~1, depending on how close the height is to the maximum step height.s
         step_safety = 0
 
         for i in range(len(cells) - 1):
@@ -274,26 +274,41 @@ class Map:
             if s > step_safety:
                 step_safety = s
         
-        # turn radius is between 0 and 1, depending on how close the turn radius is to a full 180
+        # turn radius is between 0 and 1, depending on how close the turn radius is to a full 180 degrees
         turn_radius = 0
         if o != None:
             turn_radius = self.angle_between_points([o.x, o.y], [cells[0].x, cells[0].y], [cells[len(cells)-1].x, cells[len(cells)-1].y])
             turn_radius = 1-math.exp(-turn_radius/30)
 
-        # TODO: MAKE FASTER WITH MATRIX DIALATION 
-        # calculate variance based on cells that surround the cells along the path
+         
+        # calculate height variance of cells surrounding the cells the edge passes through
+
+        # for c in range(len(cells)):
+        #     for i in range(-1,2):
+        #         for j in range(-1,2):
+        #             if(i != 0 and j != 0):
+        #                 temp_cell = self.sampleCell(cells[c].x + i, cells[c].y + j)
+        #                 #if((cells[c].x + i >= self.min) and (cells[c].x + i <= self.max) and (cells[c].y + j >= self.min) and (cells[c].y + j <= self.max)):
+        #                 if(temp_cell != None):
+        #                     if(temp_cell not in cells):
+        #                         cells.append(temp_cell)
+        #                         variance_cell_vals.append(temp_cell.raw_weight)
+
+        length = int((self.config.width / self.cell_size) / 2)
+        if length == 0:
+            length = 1
+
         for c in range(len(cells)):
-            for i in range(-1,2):
-                for j in range(-1,2):
+            for i in range(-length, length+1):
+                for j in range(-length, length+1): 
                     if(i != 0 and j != 0):
                         temp_cell = self.sampleCell(cells[c].x + i, cells[c].y + j)
                         #if((cells[c].x + i >= self.min) and (cells[c].x + i <= self.max) and (cells[c].y + j >= self.min) and (cells[c].y + j <= self.max)):
-                        if(temp_cell != None):
-                            if(temp_cell not in cells):
-                                cells.append(temp_cell)
-                                variance_cell_vals.append(temp_cell.raw_weight)
+                        if((temp_cell != None) and (temp_cell not in cells)):
+                            cells.append(temp_cell)
+                            cell_heights.append(temp_cell.raw_weight)
 
-        height_variance = 10*np.var(variance_cell_vals)
+        height_variance = 10*np.var(cell_heights)
 
         # calculate variance of normals
         norm_variance = np.sum(np.var(cell_norms, axis = 0)) if cell_norms else 0
