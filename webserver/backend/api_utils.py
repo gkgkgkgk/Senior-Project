@@ -96,6 +96,24 @@ def clearenceMap(cell_size):
     return my_map
 
 
+def astarSpeedMap(cell_size):
+    my_map = Map(cell_size=cell_size)
+    my_map.generate_random_map(32, 1/64, 8, rocks=False, seed=231, amplitude=5)
+    
+    start = (-7, 6)
+    l = 15
+    noiseA = 2
+
+    for i in range(l):
+        my_map.setCell(start[0] + i, start[1] - i, np.random.uniform(low=-1) * noiseA, additive=True)
+        my_map.setCell(start[0] + i + 1, start[1] - i, np.random.uniform(low=-1) * noiseA, additive=True)
+        my_map.setCell(start[0] + i + 1, start[1] - i + 1, np.random.uniform(low=-1) * noiseA, additive=True)
+        my_map.setCell(start[0] + i - 1, start[1] - i, np.random.uniform(low=-1) * noiseA, additive=True)
+        my_map.setCell(start[0] + i - 1, start[1] - i - 1, np.random.uniform(low=-1) * noiseA, additive=True)
+
+    return my_map
+
+
 def example():
     config = RobotConfig(3, 0.3, 0.3, 100, 100, 500)
     config.user_init(20, 0.01, 1, 0.225)

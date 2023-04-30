@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap
+from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap, astarSpeedMap
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -10,6 +10,7 @@ from graphs import PRM, Node
 from pathfinding import Astar
 from random import *
 import time
+import numpy as np
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -25,6 +26,8 @@ def getMap():
         mm = defaultMap(json_data["cellSize"])
     elif json_data["presetMap"] == "obstaclemap":
         mm = clearenceMap(json_data["cellSize"])
+    elif json_data["presetMap"] == "astarspeed":
+        mm = astarSpeedMap(json_data["cellSize"])
     else:
         mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
     
@@ -155,13 +158,31 @@ def runTest():
                 energy = float(randint(0, 100))
                 safety = float(randint(0, 100))
 
-            
+            result = {}
+
+            if(json_data['test']['runAstar']):
+                path_map.reset()
+                start_time2 = time.time_ns()// 1000000
+                astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+                astar2.find_path(mm, vanilla=True)
+                elapsed_time2 = (time.time_ns()// 1000000) - start_time2
+                result["vanilla"] = {}
+                result["vanilla"]["costs"] = {}
+                result["vanilla"]["time"] = elapsed_time2
+                result["vanilla"]["costs"]["speedCost"] = astar2.path_costs["speed"]
+                result["vanilla"]["costs"]["safetyCost"] = astar2.path_costs["safety"]
+                result["vanilla"]["costs"]["energyCost"] = astar2.path_costs["energy"]
+                result["vanilla"]["costs"]["speedCostRaw"] = astar2.path_costs["speed_raw"]
+                result["vanilla"]["costs"]["energyCostRaw"] = astar2.path_costs["energy_raw"]
+                result["vanilla"]["costs"]["distance"] = astar2.path_costs["distance"]
+                result["vanilla"]["costs"]["limit"] = astar2.path_costs["limit"]
+
+            path_map.reset()
             start_time = time.time_ns() // 1000000
             astar = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
             astar.find_path(mm)
             elapsed_time = (time.time_ns() // 1000000) - start_time
 
-            result = {}
             result["prefs"] = {}
             result["costs"] = {}
             result["config"] = {}
@@ -176,7 +197,7 @@ def runTest():
             result["costs"]["speedCostRaw"] = astar.path_costs["speed_raw"]
             result["costs"]["energyCostRaw"] = astar.path_costs["energy_raw"]
             result["costs"]["distance"] = astar.path_costs["distance"]
-            result["costs"]["limitation"] = astar.path_costs["limitation"]
+            result["costs"]["limit"] = astar.path_costs["limit"]
             result["map"]["mapSeed"] = map_seed
             result["map"]["graph_seed"] = graph_seed
             result["map"]["cellSize"] = json_data["cellSize"]
@@ -198,30 +219,207 @@ def runTest():
             result["config"]["width"] = config.width
             result["time"] = elapsed_time
 
-            if(json_data['test']['runAstar']):
-                path_map.reset()
-                start_time2 = time.time_ns()// 1000000
-                astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
-                astar2.find_path(mm, vanilla=True)
-                elapsed_time2 = (time.time_ns()// 1000000) - start_time2
-                print(astar2.path)
-                result["vanilla"] = {}
-                result["vanilla"]["costs"] = {}
-                result["vanilla"]["time"] = elapsed_time2
-                result["vanilla"]["costs"]["speedCost"] = astar2.path_costs["speed"]
-                result["vanilla"]["costs"]["safetyCost"] = astar2.path_costs["safety"]
-                result["vanilla"]["costs"]["energyCost"] = astar2.path_costs["energy"]
-                result["vanilla"]["costs"]["speedCostRaw"] = astar2.path_costs["speed_raw"]
-                result["vanilla"]["costs"]["energyCostRaw"] = astar2.path_costs["energy_raw"]
-                result["vanilla"]["costs"]["distance"] = astar2.path_costs["distance"]
-                result["vanilla"]["costs"]["limitation"] = astar2.path_costs["limitation"]
-
             test_results.append(result)
             print(speed, safety, energy)
             print(astar.path_costs)
             astar = {}
     return jsonify({
         "results": test_results
+    })
+
+@app.route('/mapsizetest', methods=['POST'])
+def runMapSizeTest(): 
+    json_data = request.get_json() 
+    test_results = []
+    config = RobotConfig(json_data['config']['maxSpeed'], json_data['config']['stepUp'], json_data['config']['stepDown'], json_data['config']['inclineUp'], json_data['config']['inclineDown'], json_data['config']['minEnergy'])
+    config.user_init(json_data['config']['mass'], 0.01, 1, json_data['config']['width'])
+
+    speed = json_data['speedPref']
+    energy = json_data['energyPref']
+    safety = json_data['safetyPref']
+
+    for m in range(json_data['test']['startMapSize'], json_data['test']['endMapSize'] + 1, json_data['test']['mapSizeIncrement']):
+        result = {}
+        times = []
+        times_vanilla = []
+        for n in range(json_data['test']['mapSizeCount']):
+            print("MapSizeCount: ", n, "mapSize:", m)
+            map_seed = randint(1, 10000000)
+            mm = Map(config=config, cell_size=json_data["cellSize"])
+            mm.generate_random_map(m, 1/64, 8, seed = map_seed, amplitude=json_data['mapAmplitude'])
+            mm.normalize_weights()
+
+            graph_seed = randint(1, 10000000)
+            prmSize = m * m * (json_data['test']['prmPercentage'] / 100)
+            path_map = PRM(prmSize, graph_seed, mm, nodes={})
+            startPos = (int(-m/2),int(m/2 - 1))
+            endPos = (int(m/2 - 1),int(-m/2))
+            path_map.generate_points(mm, a=(startPos[0], startPos[1]), b=(endPos[0], endPos[1]))
+            path_map.connect_nodes_knn(json_data['knnSize'])
+            mm.longest_edge = path_map.longest_edge
+            
+            startPos = path_map.nodes[str(startPos[0]) + "," + str(startPos[1])]
+            endPos = path_map.nodes[str(endPos[0]) + "," + str(endPos[1])]
+
+
+
+            for i in range(json_data['test']['mapSizeSample']):
+                print("------------ Running Trial:", i, "Map Size:", m, "Map Number:", n, "---------------")
+                path_map.reset()
+                start_time = time.time_ns() // 1000000
+                astar = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+                astar.find_path(mm)
+                elapsed_time = (time.time_ns() // 1000000) - start_time
+                times.append(elapsed_time)
+
+                path_map.reset()
+                start_time = time.time_ns() // 1000000
+                astar2 = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+                astar2.find_path(mm, vanilla=True)
+                elapsed_time = (time.time_ns() // 1000000) - start_time
+                times_vanilla.append(elapsed_time)
+        
+        result["avgTime"] = np.mean(times)
+        result["avgTimeVanilla"] = np.mean(times_vanilla)
+        test_results.append(result)
+
+
+    return jsonify({
+        "results": test_results
+    })
+
+
+@app.route('/prmsizetest', methods=['POST'])
+def runPRMSizeTest():
+    print("TEST")
+    json_data = request.get_json() 
+    test_results = []
+    config = RobotConfig(json_data['config']['maxSpeed'], json_data['config']['stepUp'], json_data['config']['stepDown'], json_data['config']['inclineUp'], json_data['config']['inclineDown'], json_data['config']['minEnergy'])
+    config.user_init(json_data['config']['mass'], 0.01, 1, json_data['config']['width'])
+
+    speed = json_data['speedPref']
+    energy = json_data['energyPref']
+    safety = json_data['safetyPref']
+
+    map_size = json_data['mapSize']
+    final_results = np.zeros((int(-(json_data['test']['prmPercentageStart']-json_data['test']['prmPercentageEnd'])/ json_data['test']['prmPercentageIncrement']) + 1, 5))
+    
+    for n in range(json_data['test']['prmPercentageMapCount']):
+        print("-------")
+        print(n)
+        print("-------")
+        # map_results = {}
+        # map_results["time"] = []
+        # map_results["cost"] = []
+        # map_results["percentage"] = []
+        map_results = np.empty((int(-(json_data['test']['prmPercentageStart']-json_data['test']['prmPercentageEnd'])/ json_data['test']['prmPercentageIncrement']) + 1,5))
+        map_seed = randint(1, 10000000)
+        mm = Map(config=config, cell_size=json_data["cellSize"])
+        mm.generate_random_map(map_size, 1/64, 8, seed = map_seed, amplitude=json_data['mapAmplitude'])
+        mm.normalize_weights()
+        ii=0
+        for m in range(json_data['test']['prmPercentageStart'], json_data['test']['prmPercentageEnd'] + 1, json_data['test']['prmPercentageIncrement']):
+            print(ii)
+            graph_seed = randint(1, 10000000)
+            prmSize = map_size * map_size * m / 100
+            path_map = PRM(prmSize, graph_seed, mm, nodes={})
+            startPos = (int(-map_size/2),int(map_size/2 - 1))
+            endPos = (int(map_size/2 - 1),int(-map_size/2))
+            path_map.generate_points(mm, a=(startPos[0], startPos[1]), b=(endPos[0], endPos[1]))
+            path_map.connect_nodes_knn(json_data['knnSize'])
+            mm.longest_edge = path_map.longest_edge
+            
+            startPos = path_map.nodes[str(startPos[0]) + "," + str(startPos[1])]
+            endPos = path_map.nodes[str(endPos[0]) + "," + str(endPos[1])]
+            start_time = time.time_ns() // 1000000
+
+            astar = Astar(startPos, endPos, speed = speed, energy = energy, safety = safety)
+            astar.find_path(mm)
+            elapsed_time = (time.time_ns() // 1000000) - start_time
+
+            # map_results["time"].append(elapsed_time)
+            # map_results["cost"].append(speed * astar.path_costs["speed"] + safety * astar.path_costs["safety"] + energy * astar.path_costs["energy"])
+            # map_results["percentage"].append(m)
+            map_results[ii][0] = m
+            map_results[ii][1] = elapsed_time
+            #map_results[ii][1] = speed * astar.path_costs["speed"] + safety * astar.path_costs["safety"] + energy * astar.path_costs["energy"]
+            map_results[ii][2] = astar.path_costs["speed_raw"]
+            map_results[ii][3] = astar.path_costs["safety"]
+            map_results[ii][4] = astar.path_costs["energy_raw"]
+            
+            ii+=1
+
+        #maxCost = max(map_results[:,1])
+        maxCostSpeed = max(map_results[:,2])
+        maxCostSafety = max(map_results[:,3])
+        maxCostEnergy = max(map_results[:,4])
+        
+        #minCost = min(map_results[:,1])
+        minCostSpeed = min(map_results[:,2])
+        minCostSafety = min(map_results[:,3])
+        minCostEnergy = min(map_results[:,4])
+
+        maxTime = max(map_results[:,1])
+        minTime = min(map_results[:,1])
+
+            #map_results[:,1] = [((map_results[i][1] - minCost) / (maxCost - minCost)) for i in range(len(map_results))]
+            #map_results[:,2] = [((map_results[i][2] - minTime) / (maxTime - minTime)) for i in range(len(map_results))]
+
+        #map_results[:,1] = [((map_results[i,1] - minCost) / (maxCost - minCost)) for i in range(len(map_results))]
+
+        map_results[:,2] = [((map_results[i,2] - minCostSpeed) / (maxCostSpeed - minCostSpeed)) for i in range(len(map_results))]
+        map_results[:,3] = [((map_results[i,3] - minCostSafety) / (maxCostSafety - minCostSafety)) for i in range(len(map_results))]
+        map_results[:,4] = [((map_results[i,4] - minCostEnergy) / (maxCostEnergy - minCostEnergy)) for i in range(len(map_results))]
+
+        map_results[:,1] = [((map_results[i,1] - minTime) / (maxTime - minTime)) for i in range(len(map_results))]
+
+        final_results = np.add(final_results, map_results)
+        #print(final_results)
+
+            # for i in range(len(final_results)):
+            #     final_results[i][0] = map_results[i][0]
+            #     final_results[i][1] = final_results[i][1] + map_results[i][1]
+            #     final_results[i][2] = final_results[i][2] + map_results[i][2]
+    final_results = final_results/json_data['test']['prmPercentageMapCount']
+    print(final_results)
+    final_dict = {}
+    for res in final_results:
+        final_dict[str(res[0])] = {'time': res[1], 'speedCost': res[2], 'safetyCost': res[3], 'energyCost': res[4]}
+    print(final_dict)
+
+
+
+        # maxCost = max(map_results["cost"])
+        # minCost = min(map_results["cost"])
+
+        # maxTime = max(map_results["time"])
+        # minTime = min(map_results["time"])
+        
+
+        # map_results["cost"] = [((map_results["cost"][i] - minCost) / (maxCost - minCost)) for i in range(len(map_results["cost"]))]
+        # map_results["time"] = [((map_results["time"][i] - minTime) / (maxTime - minTime)) for i in range(len(map_results["time"]))]
+
+        
+        #test_results.append(map_results)
+        
+
+    
+
+    # final_results = [[0, [], []]] * len(test_results[0]["percentage"])
+    # print(final_results)
+    # for t, test in enumerate(test_results):
+    #     for i in range(len(test["percentage"])):
+    #         final_results[i][0] = test["percentage"][i]
+    #         final_results[i][1].append(test["cost"][i]) 
+    #         final_results[i][2].append(test["time"][i])
+
+    # for i in range(len(test_results[0]["percentage"])):
+    #     final_results[i][1] = np.mean(final_results[i][1])
+    #     final_results[i][2] = np.mean(final_results[i][2])
+
+    
+    return jsonify({
+        "results": final_dict
     })
 
 

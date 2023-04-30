@@ -34,8 +34,20 @@ function SidePanel(props) {
     const [randomizeUserPrefs, setRandomizeUserPrefs] = useState(false)
     const [randomizePositions, setRandomizePositions] = useState(false)
     const [runAstar, setRunAstar] = useState(false)
-    
+
     const [distanceBased, setDistanceBased] = useState(false)
+
+    const [startMapSize, setStartMapSize] = useState(32)
+    const [endMapSize, setEndMapSize] = useState(128)
+    const [mapSizeIncrement, setMapSizeIncrement] = useState(8)
+    const [prmPercentage, setPrmPercentage] = useState(50)
+    const [mapSizeSample, setMapSizeSample] = useState(10)
+    const [mapSizeCount, setMapSizeCount] = useState(10)
+
+    const [prmPercentageStart, setPrmPercentageStart] = useState(30)
+    const [prmPercentageEnd, setPrmPercentageEnd] = useState(75)
+    const [prmPercentageIncrement, setPrmPercentageIncrement] = useState(5)
+    const [prmPercentageMapCount, setPrmPercentageMapCount] = useState(5)
 
     const handleClickMap = () => {
         props.setGraph(0)
@@ -146,8 +158,7 @@ function SidePanel(props) {
                 randomizeRobot,
                 randomizeUserPrefs,
                 runAstar,
-                mapCount
-            }
+                mapCount            }
         };
 
         fetch('http://127.0.0.1:5000/test', {
@@ -156,6 +167,92 @@ function SidePanel(props) {
                 'Content-Type': 'application/json'
             }, body: JSON.stringify(input_data)
         }).then(response => response.json()).then(data => { props.setResults(data)});
+    }
+
+    const handleClickMapSizeTests = () => {
+        let input_data = {
+            cells: props.my_map.cells,
+            nodes: props.my_graph.nodes,
+            cellSize,
+            mapSize,
+            mapSeed,
+            prmSize,
+            knnSize,
+            mapAmplitude,
+            startPos,
+            endPos,
+            speedPref,
+            safetyPref, 
+            energyPref,
+            graphSeed,
+            config: {
+                mass, 
+                width,
+                maxSpeed,
+                minEnergy,
+                stepUp,
+                stepDown,
+                inclineUp,
+                inclineDown
+            },
+            test: {
+                startMapSize,
+                endMapSize,
+                mapSizeCount,
+                mapSizeIncrement,
+                mapSizeSample,
+                prmPercentage
+            }
+        };
+
+        fetch('http://127.0.0.1:5000/mapsizetest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify(input_data)
+        }).then(response => response.json()).then(data => { props.setMapSizeResults(data)});
+    }
+
+    const handleClickPRMSizeTests = () => {
+        let input_data = {
+            cells: props.my_map.cells,
+            nodes: props.my_graph.nodes,
+            cellSize,
+            mapSize,
+            mapSeed,
+            prmSize,
+            knnSize,
+            mapAmplitude,
+            startPos,
+            endPos,
+            speedPref,
+            safetyPref, 
+            energyPref,
+            graphSeed,
+            config: {
+                mass, 
+                width,
+                maxSpeed,
+                minEnergy,
+                stepUp,
+                stepDown,
+                inclineUp,
+                inclineDown
+            },
+            test: {
+                prmPercentageStart,
+                prmPercentageEnd,
+                prmPercentageIncrement,
+                prmPercentageMapCount
+            }
+        };
+
+        fetch('http://127.0.0.1:5000/prmsizetest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify(input_data)
+        }).then(response => response.json()).then(data => { props.setPRMSizeResults(data)});
     }
 
     return (
@@ -182,6 +279,7 @@ function SidePanel(props) {
                         <option value="na">None</option>
                         <option value="testmap">Default Test Map</option>
                         <option value="obstaclemap">Obstacle Test Map</option>
+                        <option value="astarspeed">Astar Speed Map</option>
                     </select>
                 </div>
                 <div className="form-item">
@@ -314,9 +412,58 @@ function SidePanel(props) {
             </div>
             <button className={"load-button " + (props.my_graph? "" : "disabled-button")} onClick={handleClickTests}>Run Tests</button>
 
+            <div className="form-item">
+                    <label for="startmapsize">Start Size</label>
+                    <input type="number" id="startmapsize" name="startmapsize" min="0.0" max="100" defaultValue={32} onChange={e => setStartMapSize(parseInt(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="endmapsize">End Size</label>
+                    <input type="number" id="endmapsize" name="endmapsize" min="0.0" max="1000" defaultValue={128} onChange={e => setEndMapSize(parseInt(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="incrementmapsize">Increment Size</label>
+                    <input type="number" id="incrementmapsize" name="incrementmapsize" min="0.0" max="100" defaultValue={8} onChange={e => setMapSizeIncrement(parseInt(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="samplemapsize">Sample per Map</label>
+                    <input type="number" id="samplemapsize" name="samplemapsize" min="0.0" max="100" defaultValue={10} onChange={e => setMapSizeSample(parseInt(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="prmpercentage">PRM Percentage</label>
+                    <input type="number" id="prmpercentage" name="prmpercentage" min="0.0" max="100" defaultValue={50} onChange={e => setPrmPercentage(parseFloat(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="mapsizecount">Map Count</label>
+                    <input type="number" id="mapsizecount" name="mapsizecount" min="0.0" max="100" defaultValue={10} onChange={e => setMapSizeCount(parseInt(e.target.value))}/>
+            </div>
+
+            <button className={"load-button " + (props.my_graph? "" : "disabled-button")} onClick={handleClickMapSizeTests}>Run Map Size Test</button>
+
+            <div className="form-item">
+                    <label for="prmpercentagestart">PRM Percentage Start</label>
+                    <input type="number" id="prmpercentagestart" name="prmpercentagestart" min="0.0" max="100" defaultValue={30} onChange={e => setPrmPercentageStart(parseFloat(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="prmpercentageend">PRM Percentage End</label>
+                    <input type="number" id="prmpercentageend" name="prmpercentageend" min="0.0" max="100" defaultValue={75} onChange={e => setPrmPercentageEnd(parseFloat(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="prmpercentageincrement">PRM Percentage Increment</label>
+                    <input type="number" id="prmpercentageincrement" name="prmpercentageincrement" min="0.0" max="100" defaultValue={5} onChange={e => setPrmPercentageIncrement(parseFloat(e.target.value))}/>
+            </div>
+            <div className="form-item">
+                    <label for="prmpercentagesamples">Maps per Size</label>
+                    <input type="number" id="prmpercentagesamples" name="prmpercentagesamples" min="0.0" max="100" defaultValue={10} onChange={e => setPrmPercentageMapCount(parseFloat(e.target.value))}/>
+            </div>
+            <button className={"load-button " + (props.my_graph? "" : "disabled-button")} onClick={handleClickPRMSizeTests}>Run KNN Size Test</button>
+
             <hr></hr>
             <h2>Options</h2>
             <div className='myform'>
+                <div className="form-item">
+                    <label for="download_results">Download Test Results</label>
+                    <input type="checkbox" id="download_results" name="download_results" checked={props.downloadResults} onChange={e => props.setDownloadResults(!props.downloadResults)}/>
+                </div>
                 <div className="form-item">
                     <label for="distance_based">Distance Based Test</label>
                     <input type="checkbox" id="distance_based" name="distance_based" onChange={e => setDistanceBased(!distanceBased)}/>

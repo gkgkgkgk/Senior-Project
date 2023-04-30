@@ -149,7 +149,7 @@ const Display = (props) => {
                 path.path.forEach((node, index) =>{
                     let nodeCircle = new PIXI.Graphics();
                     nodeCircle.beginFill(props.pathColors[pathIndex]);
-                    nodeCircle.drawCircle(0,0,4);
+                    nodeCircle.drawCircle(0,0,5);
                     nodeCircle.endFill();
 
                     let x = center + node.x * cell_size;
@@ -162,7 +162,7 @@ const Display = (props) => {
                         let nodeEdge = new PIXI.Graphics();
                         let x1 = center + previousNode.x * cell_size;
                         let y1 = center - previousNode.y * cell_size; 
-                        nodeEdge.moveTo(x,y).lineStyle(4, props.pathColors[pathIndex]).lineTo(x1, y1);
+                        nodeEdge.moveTo(x,y).lineStyle(8, props.pathColors[pathIndex]).lineTo(x1, y1);
                         nodeContainer.addChild(nodeEdge)
                     }
                 })
