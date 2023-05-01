@@ -110,7 +110,7 @@ const Display = (props) => {
         graph.nodes.forEach((node) => {
             let nodeCircle  = new PIXI.Graphics();
             nodeCircle.beginFill(0x00ff00);
-            nodeCircle.drawCircle(0, 0, 3);
+            nodeCircle.drawCircle(0, 0, 4);
             nodeCircle.endFill();
 
             let x = center + node.x * cell_size;
@@ -121,7 +121,7 @@ const Display = (props) => {
                 let nodeEdge = new PIXI.Graphics();
                 let x1 = center + edge.x * cell_size;
                 let y1 = center - edge.y * cell_size; 
-                nodeEdge.moveTo(x,y).lineStyle(1, 0x00ff00).lineTo(x1, y1);
+                nodeEdge.moveTo(x,y).lineStyle(2, 0x00ff00).lineTo(x1, y1);
                 app.stage.addChild(nodeEdge)
             })
             newGraphContainer.addChild(nodeCircle);
