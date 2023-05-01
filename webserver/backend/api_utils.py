@@ -1,6 +1,5 @@
 import pygame
 from map import Map
-from drawer import Drawer
 from graphs import PRM, Grid
 from pathfinding import Astar
 from robot import RobotConfig

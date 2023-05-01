@@ -40,7 +40,7 @@ function App() {
     console.log(results)
   };
 
-  const pathColors = ['#008cff', '#ef3b3f', '#5b9d3f', '#5a5a5a', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc'];
+  const pathColors = ['#035efc', '#ef3b3f', '#5b9d3f', '#5a5a5a', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc', '#8c03fc', '#fcba03', '#ba03fc', '#03f8fc', '#8c03fc'];
 
 
   const addPath = (path) => {

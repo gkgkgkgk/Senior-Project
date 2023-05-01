@@ -2,6 +2,5 @@ flask
 numpy
 matplotlib
 opensimplex
-pygame
 jsonify
 flask_cors
