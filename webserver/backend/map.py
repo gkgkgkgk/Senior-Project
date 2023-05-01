@@ -168,7 +168,7 @@ class Map:
         if energy_weight != 0 or speed_weight != 0:
             heuristic =  self.heuristic(b, d)
 
-        cost_safety, clearance_score = 0, 0
+        cost_safety, clearance_score = 0, True
         if safety_weight != 0 or cost_array:
             cost_safety, clearance_score = self.safety_cost(cells, o)
 
@@ -180,6 +180,9 @@ class Map:
         limit_cost = 0
         if limit_calc > 0 or not clearance_score:
             limit_cost = 10000
+        
+        
+        print(limit_calc, limit_cost, not clearance_score)
 
         if not cost_array:
             return heuristic, cost + limit_cost
