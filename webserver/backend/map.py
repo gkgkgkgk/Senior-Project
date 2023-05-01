@@ -358,6 +358,7 @@ class Map:
         bc = np.array(c) - np.array(b)
 
         cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        cosine_angle = cosine_angle if cosine_angle < 1 else 1
         angle = np.arccos(cosine_angle)
 
         return np.degrees(angle)
