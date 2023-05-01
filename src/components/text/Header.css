@@ -1,3 +1,11 @@
 .text {
     text-align: center;
+    margin-bottom: 30px;
+}
+
+.downloads {
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
