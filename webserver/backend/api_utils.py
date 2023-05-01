@@ -1,4 +1,3 @@
-import pygame
 from map import Map
 from graphs import PRM, Grid
 from pathfinding import Astar
