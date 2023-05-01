@@ -4,4 +4,3 @@ matplotlib
 opensimplex
 jsonify
 flask_cors
-open3d
