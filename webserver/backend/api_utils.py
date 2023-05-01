@@ -5,7 +5,6 @@ from robot import RobotConfig
 import numpy as np
 import time
 from graphs import PRM, Node
-from pcd_conv import pcd_2_map
 
 def generate_prm_from_json(json_nodes, mm, seed):
     nodes = {}
@@ -114,21 +113,6 @@ def astarSpeedMap(cell_size):
         my_map.setCell(start[0] + i - 1, start[1] - i, np.random.uniform(low=-1) * noiseA, additive=True)
         my_map.setCell(start[0] + i - 1, start[1] - i - 1, np.random.uniform(low=-1) * noiseA, additive=True)
 
-    return my_map
-
-def LiDAR(cell_size):
-    my_map = Map(cell_size=cell_size)
-    my_map.generate_blank_map(1)
-
-    cells = pcd_2_map('example.pcd', max_radius = 50, downsample_factor = 0.001)
-    for cell in cells:
-        weight = cells[cell]['max']
-        if((weight > 5) and (cells[cell]['mean'] > 5)):
-            weight = -1.6
-        norm = cells[cell]['norm_mean'] if "norm_mean" in cells[cell] else None
-        # print(cells[cell]['norm_mean'])
-        my_map.addCell(int(cell.split(":")[0]), int(cell.split(":")[1]), weight, norm)
-    
     return my_map
 
 def example():
