@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask import jsonify
 import json
 import os
-from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap, astarSpeedMap, LiDAR
+from api_utils import example, generate_prm_from_json, defaultMap, clearenceMap, astarSpeedMap
 from robot import RobotConfig
 from map import Map
 from flask_cors import CORS
@@ -28,8 +28,6 @@ def getMap():
         mm = clearenceMap(json_data["cellSize"])
     elif json_data["presetMap"] == "astarspeed":
         mm = astarSpeedMap(json_data["cellSize"])
-    elif json_data["presetMap"] == "LiDAR":
-        mm = LiDAR(json_data["cellSize"])
     else:
         mm.generate_random_map(json_data['mapSize'], 1/64, 8, seed = json_data['mapSeed'], amplitude=json_data['mapAmplitude'])
     
