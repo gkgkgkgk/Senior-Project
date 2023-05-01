@@ -6,6 +6,10 @@ import math
 # Function that finds what grid cells a line intersects with as well as the length of the line that is within each intersection cell
 def get_intersect_cells(start, end, plot = False):
 
+  # If start and end point are same, return start point with length of 0
+  if(start == end):
+    return([(start[0],start[1],0)])
+  
   intersect_cell_lengths = []
   x_int = []
   y_int = []

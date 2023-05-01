@@ -22,8 +22,8 @@ class Map:
         self.min = 0
         self.max = 0
         self.longest_edge = 0
-        self.diagonal = 0;
-        self.setDiagonal();
+        self.diagonal = 0
+        self.setDiagonal()
 
     def setDiagonal(self):
         self.diagonal = np.sqrt(2) * np.sqrt(len(self.cells))
