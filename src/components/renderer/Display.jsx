@@ -20,7 +20,9 @@ const Display = (props) => {
     <div className='displayContainer'>
     <div className='canvas'>
     <Canvas camera={{ manual: true }}>
-      <directionalLight color={'white'} intensity={0.5} castShadow position={[0, 8, 0]} />
+      <directionalLight color={'white'} intensity={0.25} castShadow position={[0, 8, 0]} />
+      <directionalLight color={'white'} intensity={0.25} castShadow position={[8, 4, 0]} />
+
         {props.myMap.map(item =>{
           let weight = item.normalized_weight * 3
           let height = weight + 3.1;
@@ -30,7 +32,7 @@ const Display = (props) => {
         <Path color={0x008cff} points={props.path} myMap={pointMap}></Path>
         <Box color={'green'} height={1} position={[-16, 5.3, 15]} />
         <Box color={'red'} height={1} position={[15, 2.2, -16]} />
-        <OrbitControls enableZoom={false} enablePan={false}
+        <OrbitControls enableZoom={true} enablePan={false}
           // minAzimuthAngle={-Math.PI / 4}
           // maxAzimuthAngle={Math.PI / 4}
           minPolarAngle={Math.PI/6}

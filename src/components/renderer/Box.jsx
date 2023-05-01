@@ -11,12 +11,14 @@ const Box = (props) => {
         <mesh
         {...props}
         ref={ref}
+        castShadow={true}
+        receiveShadow={true}
         onClick={(event) => click(!clicked)}
         onPointerOver={(event) => hover(true)}
         onPointerOut={(event) => hover(false)}>
         <boxGeometry args={[1, Math.abs(props.height), 1]} />
-        {/* <meshStandardMaterial attach="material" color={props.color} /> */}
-        <meshToonMaterial color={props.color}></meshToonMaterial>
+        <meshStandardMaterial attach="material" color={props.color} />
+        {/* <meshToonMaterial color={props.color}></meshToonMaterial> */}
       </mesh>
     );
   };

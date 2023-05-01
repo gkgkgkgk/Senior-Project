@@ -6,7 +6,7 @@ const Camera = (props) => {
     const { viewport } = useThree()
     console.log(viewport.width)
     return (
-        <OrthographicCamera makeDefault position={[20, 20, 30]} zoom={15} />
+        <OrthographicCamera makeDefault position={[20, 20, 30]} zoom={6} />
     );
   };
   
