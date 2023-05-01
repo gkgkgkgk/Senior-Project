@@ -81,6 +81,11 @@ def defaultMap(cell_size):
     my_map.setCell(-5, 10, 0.45)
     my_map.setCell(-10, 13, 0.48)
     my_map.setCell(-11, 12, 0.47)
+    my_map.setCell(-12, 15, 0.445)
+    my_map.setCell(-13, 15, 0.445)
+    my_map.setCell(-14, 15, 0.445)
+    my_map.setCell(-15, 15, 0.445)
+    my_map.setCell(-11, 15, 0.445)
 
     weight = 0.32
 
