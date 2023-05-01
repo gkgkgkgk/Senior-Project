@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react'
-
+import "./Paper.css"
 const Box = (props) => {
     return (
-        <div>
+        <div className='paper'>
             <h4>
                 Abstract
             </h4>
