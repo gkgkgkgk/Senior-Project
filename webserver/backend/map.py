@@ -182,8 +182,6 @@ class Map:
             limit_cost = 10000
         
         
-        print(limit_calc, limit_cost, not clearance_score)
-
         if not cost_array:
             return heuristic, cost + limit_cost
 
