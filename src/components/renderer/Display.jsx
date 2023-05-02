@@ -37,6 +37,8 @@ const Display = (props) => {
           // maxAzimuthAngle={Math.PI / 4}
           minPolarAngle={Math.PI/6}
           maxPolarAngle={3*Math.PI/7}
+          maxZoom={20}
+          minZoom={5}
           />
         <Camera></Camera>
     </Canvas>
