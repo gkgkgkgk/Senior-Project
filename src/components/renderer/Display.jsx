@@ -58,7 +58,7 @@ const Display = (props) => {
             <input type="range" id="energy-slider" name="energy" min="0" max="100" defaultValue={props.energy} onChange={e => props.setEnergy(parseInt(e.target.value))}/>
             </div>
             <hr/>
-            <button onClick={props.handleGetPath}>Generate Path!</button>
+            <button onClick={props.handleGetPath} disabled={props.loading}>{props.loading ? "Loading..." : "Generate Path!"}</button>
         </div>
     </div>
   );

@@ -48,7 +48,7 @@ button {
     transition: border-color 0.25s;
     /* width: 50%; */
   }
-button:hover {
+button:hover:enabled {
 border-color: #646cff;
 }
 button:focus,
@@ -56,9 +56,18 @@ button:focus-visible {
 outline: 4px auto -webkit-focus-ring-color;
 }
 
+button:disabled {
+    cursor: not-allowed;
+    background-color: darkgray;
+}
+
 .displayContainer {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.loading {
+    text-align: center;
 }

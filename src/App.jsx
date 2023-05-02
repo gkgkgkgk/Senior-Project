@@ -27170,6 +27170,7 @@ const App = () => {
           "inclineDown": 60
         }
       };
+      setLoading(true);
 
       console.log(input_data)
 
@@ -27178,13 +27179,15 @@ const App = () => {
           headers: {
               'Content-Type': 'application/json'
           }, body: JSON.stringify(input_data)
-      }).then(response => response.json()).then(data => { console.log(data.path); setPath(data.path)});
+      }).then(response => response.json()).then(data => { console.log(data.path); setPath(data.path); setLoading(false);});
   }
+
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="content">
       <Header></Header>
-      <Display path={path} myMap={myMap} handleGetPath={handleGetPath} speed={speed} safety={safety} energy={energy} setSpeed={setSpeed} setSafety={setSafety} setEnergy={setEnergy}/>
+      <Display path={path} myMap={myMap} loading={loading} handleGetPath={handleGetPath} speed={speed} safety={safety} energy={energy} setSpeed={setSpeed} setSafety={setSafety} setEnergy={setEnergy}/>
       <Paper></Paper>
     </div>
   );
