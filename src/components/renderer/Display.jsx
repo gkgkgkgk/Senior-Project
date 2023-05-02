@@ -27,11 +27,11 @@ const Display = (props) => {
           let weight = item.normalized_weight * 3
           let height = weight + 3.1;
           let y = height /2;
-          return <Box color={'white'} height={height} position={[item.x, y, item.y]} />
+          return <Box color={'white'} size={[1, height, 1]} position={[item.x, y, item.y]} />
         })}
         <Path color={0x008cff} points={props.path} myMap={pointMap}></Path>
-        <Box color={'green'} height={1} position={[-16, 5.3, 15]} />
-        <Box color={'red'} height={1} position={[15, 2.2, -16]} />
+        <Box color={0x39FF14} size={[2.5, 2.5, 2.5]} position={[-16, 5.3, 15]} />
+        <Box color={'red'} size={[2.5, 2.5, 2.5]} position={[15, 2.2, -16]} />
         <OrbitControls enableZoom={true} enablePan={false}
           // minAzimuthAngle={-Math.PI / 4}
           // maxAzimuthAngle={Math.PI / 4}
@@ -58,7 +58,7 @@ const Display = (props) => {
             <input type="range" id="energy-slider" name="energy" min="0" max="100" defaultValue={props.energy} onChange={e => props.setEnergy(parseInt(e.target.value))}/>
             </div>
             <hr/>
-            <button onClick={props.handleGetPath}>Generate Path!</button>
+            <button onClick={props.handleGetPath} disabled={props.loading}>{props.loading ? "Loading..." : "Generate Path!"}</button>
         </div>
     </div>
   );
