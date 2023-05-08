@@ -1,6 +1,6 @@
 # Senior-Project
 Netanel Fiorino, Gavri Kepets, Ayden Shankman
-View the website [here](pathplanning.online)!
+View the website [here](https://pathplanning.online)!
 
 ## How to Run
 * Clone the repository
