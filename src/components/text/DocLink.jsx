@@ -9,7 +9,7 @@ const DocLink = (props) => {
         <div className="gh">
             <a download href={paper}>
             <img src={docLogo} className="logo react" alt="React logo" />
-            <p>View our paper here (WIP)!</p>
+            <p>View our paper here!</p>
             </a>
         </div>
     );
